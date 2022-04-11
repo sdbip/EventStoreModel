@@ -3,17 +3,13 @@ import EventStore
 
 final class ReconstitutionTests: XCTestCase {
     func test_() throws {
-        let entity: TestEntity = reconstitute(events: [PublishedEvent(name: "test")])
+        let history = History(events: [PublishedEvent(name: "test")])
+
+        let entity: TestEntity = history.reconstitute()
 
         XCTAssertNotNil(entity)
         XCTAssertEqual(entity.lastReconstitutedEvent?.name, "test")
     }
-}
-
-func reconstitute<EntityType: Entity>(events: [PublishedEvent]) -> EntityType {
-    let entity = EntityType()
-    for event in events { entity.apply(event) }
-    return entity
 }
 
 final class TestEntity: Entity {
