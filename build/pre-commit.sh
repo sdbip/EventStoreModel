@@ -1,3 +1,6 @@
 path="$(dirname "$(readlink -f $BASH_SOURCE)")"
 
-source "$path/developer.env" && time swift test
+source "$path/developer.env"
+time {
+    swift test && echo "🤡" || echo "💀"
+}
