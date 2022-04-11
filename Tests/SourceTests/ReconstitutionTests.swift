@@ -50,3 +50,9 @@ final class TestEntity: Entity {
         lastReconstitutedEvent = event
     }
 }
+
+extension PublishedEvent {
+    init(name: String) {
+        self.init(name: name, details: "{}", actor: "anyone", timestamp: Date.distantPast)
+    }
+}
