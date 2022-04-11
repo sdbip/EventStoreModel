@@ -39,18 +39,6 @@ final class ReconstitutionTests: XCTestCase {
     }
 }
 
-final class TestEntity: Entity {
-    static let type = "TestEntity"
-    let version: EntityVersion
-    var lastReconstitutedEvent: PublishedEvent?
-
-    init(version: EntityVersion) { self.version = version }
-
-    func apply(_ event: PublishedEvent) {
-        lastReconstitutedEvent = event
-    }
-}
-
 extension PublishedEvent {
     init(name: String) {
         self.init(name: name, details: "{}", actor: "anyone", timestamp: Date.distantPast)
