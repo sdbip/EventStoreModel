@@ -1,9 +1,9 @@
 public struct History {
     public let type: String
     public let events: [PublishedEvent]
-    public let version: Int32
+    public let version: EntityVersion
 
-    public init(type: String, events: [PublishedEvent], version: Int32) {
+    public init(type: String, events: [PublishedEvent], version: EntityVersion) {
         self.type = type
         self.events = events
         self.version = version

@@ -41,10 +41,10 @@ final class ReconstitutionTests: XCTestCase {
 
 final class TestEntity: Entity {
     static let type = "TestEntity"
-    let version: Int32
+    let version: EntityVersion
     var lastReconstitutedEvent: PublishedEvent?
 
-    init(version: Int32) { self.version = version }
+    init(version: EntityVersion) { self.version = version }
 
     func apply(_ event: PublishedEvent) {
         lastReconstitutedEvent = event

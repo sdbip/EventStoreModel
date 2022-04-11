@@ -1,9 +1,9 @@
 public protocol Entity {
 
     static var type: String { get }
-    var version: Int32 { get }
+    var version: EntityVersion { get }
 
-    init(version: Int32)
+    init(version: EntityVersion)
 
     func apply(_ event: PublishedEvent)
 
