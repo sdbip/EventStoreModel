@@ -1,5 +1,5 @@
 import XCTest
-import EventStore
+import Source
 
 final class ReconstitutionTests: XCTestCase {
     func test_appliesEvents() throws {
