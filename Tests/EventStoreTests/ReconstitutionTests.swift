@@ -9,7 +9,7 @@ final class ReconstitutionTests: XCTestCase {
             version: 3
         )
 
-        let entity: TestEntity = history.reconstitute()
+        let entity: TestEntity = try history.reconstitute()
 
         XCTAssertNotNil(entity)
         XCTAssertEqual(entity.lastReconstitutedEvent?.name, "test")
@@ -22,14 +22,25 @@ final class ReconstitutionTests: XCTestCase {
             version: 3
         )
 
-        let entity: TestEntity = history.reconstitute()
+        let entity: TestEntity = try history.reconstitute()
 
         XCTAssertNotNil(entity)
         XCTAssertEqual(entity.version, 3)
     }
+
+    func test_failsIfWrongType() throws {
+        let history = History(
+            type: "NotTestEntity",
+            events: [PublishedEvent(name: "test")],
+            version: 3
+        )
+
+        XCTAssertThrowsError(try history.reconstitute() as TestEntity)
+    }
 }
 
 final class TestEntity: Entity {
+    static let type = "TestEntity"
     let version: Int32
     var lastReconstitutedEvent: PublishedEvent?
 

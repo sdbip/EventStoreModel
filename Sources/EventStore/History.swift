@@ -9,9 +9,17 @@ public struct History {
         self.version = version
     }
 
-    public func reconstitute<EntityType: Entity>() -> EntityType {
+    public func reconstitute<EntityType: Entity>() throws -> EntityType {
+        guard EntityType.type == self.type else {
+            throw ReconstitutionError.incorrectType
+        }
+
         let entity = EntityType(version: self.version)
         for event in self.events { entity.apply(event) }
         return entity
     }
+}
+
+public enum ReconstitutionError: Error {
+    case incorrectType
 }
