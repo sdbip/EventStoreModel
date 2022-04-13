@@ -1,7 +1,7 @@
 import SQLite3
 
 public struct Statement {
-    public let pointer: OpaquePointer
+    private let pointer: OpaquePointer
     private let connection: DbConnection
 
     public init(prepare sql: String, connection: DbConnection) throws {
@@ -21,15 +21,15 @@ public struct Statement {
         }
     }
 
-    public func single<T>(read: (Statement) throws -> T) throws -> T? {
+    public func single<T>(read: (ResultRow) throws -> T) throws -> T? {
         return try query(read: read).first
     }
 
-    public func query<T>(read: (Statement) throws -> T) throws -> [T] {
+    public func query<T>(read: (ResultRow) throws -> T) throws -> [T] {
         var result: [T] = []
 
         while sqlite3_step(pointer) == SQLITE_ROW {
-            result.append(try read(self))
+            result.append(try read(ResultRow(pointer: pointer)))
         }
 
         guard sqlite3_finalize(pointer) == SQLITE_OK else {

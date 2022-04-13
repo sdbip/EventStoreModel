@@ -40,10 +40,10 @@ public struct EntityStore {
         let statement = try Statement(prepare: "SELECT * FROM Entities WHERE id = '" + id + "'", connection: connection)
 
         return try statement.single {
-            (statement: Statement) -> History in
+            (row: ResultRow) -> History in
 
-            let type = sqlite3_column_text(statement.pointer, 1)
-            let version = sqlite3_column_int(statement.pointer, 2)
+            let type = sqlite3_column_text(row.pointer, 1)
+            let version = sqlite3_column_int(row.pointer, 2)
 
             guard let type = type else {
                 throw SQLiteError.message("type is null")
