@@ -7,7 +7,7 @@ public struct Statement {
     public init(prepare sql: String, connection: DbConnection) throws {
         var statement: OpaquePointer?
         guard sqlite3_prepare_v2(connection.pointer, sql, -1, &statement, nil) == SQLITE_OK else {
-            throw SQLiteError.lastError(connection: connection.pointer)
+            throw connection.lastError()
         }
         self.pointer = statement!
         self.connection = connection
@@ -15,7 +15,7 @@ public struct Statement {
 
     public func execute() throws {
         guard sqlite3_finalize(self.pointer) == SQLITE_OK else {
-            throw SQLiteError.lastError(connection: self.connection.pointer)
+            throw connection.lastError()
         }
     }
 }
