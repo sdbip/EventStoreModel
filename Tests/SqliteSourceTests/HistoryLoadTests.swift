@@ -46,7 +46,7 @@ final class HistoryLoadTests: XCTestCase {
         try connection.close()
 
         let history = try store.getHistory(id: "test")
-        XCTAssertEqual(history.type, "TheType")
-        XCTAssertEqual(history.version, 42)
+        XCTAssertEqual(history?.type, "TheType")
+        XCTAssertEqual(history?.version, 42)
     }
 }
