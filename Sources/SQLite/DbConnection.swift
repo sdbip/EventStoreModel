@@ -9,4 +9,8 @@ public struct DbConnection {
         guard let connection = connection else { return nil }
         self.pointer = connection
     }
+
+    public func close() {
+        sqlite3_close(self.pointer)
+    }
 }

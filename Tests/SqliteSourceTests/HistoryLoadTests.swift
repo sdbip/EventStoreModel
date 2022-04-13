@@ -41,7 +41,7 @@ final class HistoryLoadTests: XCTestCase {
             return XCTFail("error finalizing prepared statement: \(errmsg)")
         }
 
-        sqlite3_close(connection.pointer)
+        connection.close()
     }
 }
 

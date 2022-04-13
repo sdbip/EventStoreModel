@@ -28,7 +28,7 @@ public struct EntityStore {
                 position bigint
             )
             """, nil, nil, nil)
-        sqlite3_close(connection.pointer)
+        connection.close()
     }
 
 }
