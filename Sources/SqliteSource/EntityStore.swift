@@ -38,13 +38,8 @@ public struct EntityStore {
 
         guard sqlite3_step(statement.pointer) == SQLITE_ROW else { throw connection.lastError() }
 
-        let id = sqlite3_column_text(statement.pointer, 0)
         let type = sqlite3_column_text(statement.pointer, 1)
         let version = sqlite3_column_int64(statement.pointer, 2)
-
-        guard let id = id else {
-            throw SQLiteError.message("id is null")
-        }
 
         guard let type = type else {
             throw SQLiteError.message("type is null")
