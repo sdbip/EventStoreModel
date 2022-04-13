@@ -7,10 +7,13 @@ private let SQLITE_STATIC = unsafeBitCast(0, to: sqlite3_destructor_type.self)
 private let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
 
 public struct EntityStore {
+    private let dbFile: String
 
-    public init() {}
+    public init(dbFile: String) {
+        self.dbFile = dbFile
+    }
 
-    public func addSchema(dbFile: String) throws {
+    public func addSchema() throws {
         let connection = try DbConnection(openFile: dbFile)
 
         try connection.execute("""
@@ -32,7 +35,7 @@ public struct EntityStore {
         try connection.close()
     }
 
-    public func getHistory(id: String, dbFile: String) throws -> History {
+    public func getHistory(id: String) throws -> History {
         let connection = try DbConnection(openFile: dbFile)
         let statement = try Statement(prepare: "SELECT * FROM Entities WHERE id = '" + id + "'", connection: connection)
 

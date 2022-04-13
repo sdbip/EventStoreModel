@@ -11,11 +11,13 @@ internal let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.se
 let testDBFile = "test.db"
 
 final class HistoryLoadTests: XCTestCase {
+    var store: EntityStore!
+
     override func setUp() {
-        let store = EntityStore()
+        store = EntityStore(dbFile: testDBFile)
 
         do {
-            try store.addSchema(dbFile: testDBFile)
+            try store.addSchema()
         } catch {
             XCTFail("\(error)")
         }
@@ -43,8 +45,7 @@ final class HistoryLoadTests: XCTestCase {
         try statement.execute()
         try connection.close()
 
-        let store = EntityStore()
-        let history = try store.getHistory(id: "test", dbFile: testDBFile)
+        let history = try store.getHistory(id: "test")
         XCTAssertEqual(history.type, "TheType")
         XCTAssertEqual(history.version, 42)
     }
