@@ -39,7 +39,7 @@ public struct EntityStore {
         let connection = try DbConnection(openFile: dbFile)
         let statement = try Statement(prepare: "SELECT * FROM Entities WHERE id = '" + id + "'", connection: connection)
 
-        let histories = try statement.query {
+        return try statement.single {
             (statement: Statement) -> History in
 
             let type = sqlite3_column_text(statement.pointer, 1)
@@ -51,6 +51,5 @@ public struct EntityStore {
 
             return History(type: String(cString: type), events: [], version: .version(version))
         }
-        return histories.first
     }
 }

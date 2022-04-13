@@ -21,6 +21,10 @@ public struct Statement {
         }
     }
 
+    public func single<T>(read: (Statement) throws -> T) throws -> T? {
+        return try query(read: read).first
+    }
+
     public func query<T>(read: (Statement) throws -> T) throws -> [T] {
         var result: [T] = []
 
