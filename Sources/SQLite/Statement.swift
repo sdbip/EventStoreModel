@@ -14,7 +14,9 @@ public struct Statement {
     }
 
     public func execute() throws {
-        sqlite3_step(pointer)
+        guard sqlite3_step(pointer) == SQLITE_DONE else {
+            throw connection.lastError()
+        }
 
         guard sqlite3_finalize(pointer) == SQLITE_OK else {
             throw connection.lastError()

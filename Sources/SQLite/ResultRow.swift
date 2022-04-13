@@ -11,6 +11,10 @@ public struct ResultRow {
         return sqlite3_column_int(pointer, column)
     }
 
+    public func double(at column: Int32) -> Double {
+        return sqlite3_column_double(pointer, column)
+    }
+
     public func string(at column: Int32) -> String? {
         guard let value = sqlite3_column_text(pointer, column) else { return nil }
         return String(cString: value)

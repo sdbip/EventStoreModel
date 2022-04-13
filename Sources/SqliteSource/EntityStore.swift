@@ -1,3 +1,4 @@
+import Foundation
 import SQLite3
 
 import Source
@@ -37,11 +38,30 @@ public struct EntityStore {
 
     public func getHistory(id: String) throws -> History? {
         let connection = try DbConnection(openFile: dbFile)
-        let statement = try Statement(prepare: "SELECT * FROM Entities WHERE id = '" + id + "'", connection: connection)
 
-        return try statement.single { row in
-            guard let type = row.string(at: 1) else { throw SQLiteError.message("Entity has no type") }
-            return History(type: type, events: [], version: .version(row.int32(at: 2)))
+        let statement1 = try Statement(prepare: "SELECT * FROM Events WHERE entity = '" + id + "'", connection: connection)
+        let events = try statement1.query { row -> PublishedEvent in
+            guard let name = row.string(at: 1) else { throw SQLiteError.message("Event has no name") }
+            guard let details = row.string(at: 2) else { throw SQLiteError.message("Event has no details") }
+            guard let actor = row.string(at: 3) else { throw SQLiteError.message("Event has no actor") }
+            return PublishedEvent(name: name, details: details, actor: actor, timestamp: Date(julianDay: row.double(at: 4)))
         }
+
+        let statement2 = try Statement(prepare: "SELECT * FROM Entities WHERE id = '" + id + "'", connection: connection)
+        return try statement2.single { row in
+            guard let type = row.string(at: 1) else { throw SQLiteError.message("Entity has no type") }
+            return History(type: type, events: events, version: .version(row.int32(at: 2)))
+        }
+    }
+}
+
+// Swift reference date is January 1, 2001 CE @ 0:00:00
+// Julian Day 0 is November 24, 4714 BCE @ 12:00:00
+// Those dates are 2451910.5 days apart.
+let julianDayAtReferenceDate = 2451910.5
+let secondsPerDay = 86_400 as Double
+extension Date {
+    public init(julianDay: Double) {
+        self.init(timeIntervalSinceReferenceDate: (julianDay - julianDayAtReferenceDate) * secondsPerDay)
     }
 }
