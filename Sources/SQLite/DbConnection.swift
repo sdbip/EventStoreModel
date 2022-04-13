@@ -23,7 +23,7 @@ public struct DbConnection {
         }
     }
 
-    func lastError() -> SQLiteError {
+    public func lastError() -> SQLiteError {
         SQLiteError.lastError(connection: self.pointer)
     }
 }

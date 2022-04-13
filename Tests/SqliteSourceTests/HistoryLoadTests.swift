@@ -11,22 +11,42 @@ internal let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.se
 let testDBFile = "test.db"
 
 final class HistoryLoadTests: XCTestCase {
-    override func tearDown() {
+    override func setUp() {
+        let store = EntityStore()
+
         do {
-            try FileManager.default.removeItem(atPath: testDBFile)
+            try store.addSchema(dbFile: testDBFile)
         } catch {
-            print("Error deleting file \(testDBFile): \(error)")
+            XCTFail("\(error)")
         }
     }
 
-    func test_addsSchema() throws {
-        let store = EntityStore()
-        try store.addSchema(dbFile: testDBFile)
+    override func tearDown() {
+        do {
+            try FileManager.default.removeItem(atPath: testDBFile)
+        } catch { }
+    }
 
+    func test_addsSchema() throws {
         let connection = try DbConnection(openFile: testDBFile)
         let statement = try Statement(prepare: "select * from Entities", connection: connection)
         try statement.execute()
         try connection.close()
+    }
+
+    func test_fetchesEntityData() throws {
+        let connection = try DbConnection(openFile: testDBFile)
+        let statement = try Statement(
+            prepare: "insert into Entities (id, type, version) values ('test', 'TheType', 42)",
+            connection: connection
+        )
+        try statement.execute()
+        try connection.close()
+
+        let store = EntityStore()
+        let history = try store.getHistory(id: "test", dbFile: testDBFile)
+        XCTAssertEqual(history.type, "TheType")
+        XCTAssertEqual(history.version, 42)
     }
 }
 

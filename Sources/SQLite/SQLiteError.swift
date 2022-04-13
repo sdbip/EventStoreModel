@@ -1,6 +1,6 @@
 import SQLite3
 
-enum SQLiteError: Error {
+public enum SQLiteError: Error {
     case unknown
     case message(String)
 

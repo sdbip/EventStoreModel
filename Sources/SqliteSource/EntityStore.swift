@@ -1,5 +1,6 @@
 import SQLite3
 
+import Source
 import SQLite
 
 private let SQLITE_STATIC = unsafeBitCast(0, to: sqlite3_destructor_type.self)
@@ -31,4 +32,24 @@ public struct EntityStore {
         try connection.close()
     }
 
+    public func getHistory(id: String, dbFile: String) throws -> History {
+        let connection = try DbConnection(openFile: dbFile)
+        let statement = try Statement(prepare: "SELECT * FROM Entities WHERE id = '" + id + "'", connection: connection)
+
+        guard sqlite3_step(statement.pointer) == SQLITE_ROW else { throw connection.lastError() }
+
+        let id = sqlite3_column_text(statement.pointer, 0)
+        let type = sqlite3_column_text(statement.pointer, 1)
+        let version = sqlite3_column_int64(statement.pointer, 2)
+
+        guard let id = id else {
+            throw SQLiteError.message("id is null")
+        }
+
+        guard let type = type else {
+            throw SQLiteError.message("type is null")
+        }
+
+        return History(type: String(cString: type), events: [], version: .version(Int32(version)))
+    }
 }
