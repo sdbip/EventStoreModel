@@ -22,12 +22,9 @@ final class HistoryLoadTests: XCTestCase {
     func test_addsSchema() throws {
         let store = EntityStore()
         try store.addSchema(dbFile: testDBFile)
-        try assertCanCall(query: "select * from Entities")
-    }
 
-    private func assertCanCall(query: String) throws {
         let connection = try DbConnection(openFile: testDBFile)
-        let statement = try Statement(prepare: query, connection: connection)
+        let statement = try Statement(prepare: "select * from Entities", connection: connection)
         try statement.execute()
         try connection.close()
     }
