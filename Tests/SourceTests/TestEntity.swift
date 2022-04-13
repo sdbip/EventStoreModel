@@ -9,7 +9,7 @@ final class TestEntity: Entity {
 
     init(version: EntityVersion) {
         self.version = version
-        self.unpublishedEvents = []
+        unpublishedEvents = []
     }
 
     func apply(_ event: PublishedEvent) {

@@ -9,17 +9,17 @@ public struct Statement {
         guard sqlite3_prepare_v2(connection.pointer, sql, -1, &statement, nil) == SQLITE_OK else {
             throw connection.lastError()
         }
-        self.pointer = statement!
+        pointer = statement!
         self.connection = connection
     }
 
     public func execute() throws {
-        sqlite3_step(self.pointer)
-/*        guard [SQLITE_OK, SQLITE_ROW].contains(sqlite3_step(self.pointer)) else {
+        sqlite3_step(pointer)
+/*        guard [SQLITE_OK, SQLITE_ROW].contains(sqlite3_step(pointer)) else {
             throw connection.lastError()
         }*/
 
-        guard sqlite3_finalize(self.pointer) == SQLITE_OK else {
+        guard sqlite3_finalize(pointer) == SQLITE_OK else {
             throw connection.lastError()
         }
     }

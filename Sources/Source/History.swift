@@ -10,12 +10,12 @@ public struct History {
     }
 
     public func reconstitute<EntityType: Entity>() throws -> EntityType {
-        guard EntityType.type == self.type else {
+        guard EntityType.type == type else {
             throw ReconstitutionError.incorrectType
         }
 
-        let entity = EntityType(version: self.version)
-        for event in self.events { entity.apply(event) }
+        let entity = EntityType(version: version)
+        for event in events { entity.apply(event) }
         return entity
     }
 }
