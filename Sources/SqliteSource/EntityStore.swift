@@ -39,17 +39,9 @@ public struct EntityStore {
         let connection = try DbConnection(openFile: dbFile)
         let statement = try Statement(prepare: "SELECT * FROM Entities WHERE id = '" + id + "'", connection: connection)
 
-        return try statement.single {
-            (row: ResultRow) -> History in
-
-            let type = sqlite3_column_text(row.pointer, 1)
-            let version = sqlite3_column_int(row.pointer, 2)
-
-            guard let type = type else {
-                throw SQLiteError.message("type is null")
-            }
-
-            return History(type: String(cString: type), events: [], version: .version(version))
+        return try statement.single { row in
+            guard let type = row.string(at: 1) else { throw SQLiteError.message("Entity has no type") }
+            return History(type: type, events: [], version: .version(row.int32(at: 2)))
         }
     }
 }
