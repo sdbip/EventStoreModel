@@ -27,18 +27,8 @@ final class HistoryLoadTests: XCTestCase {
 
     private func assertCanCall(query: String) throws {
         let connection = try DbConnection(openFile: testDBFile)
-
-        var statement: OpaquePointer?
-        guard sqlite3_prepare_v2(connection.pointer, query, -1, &statement, nil) == SQLITE_OK else {
-            let errmsg = String(cString: sqlite3_errmsg(connection.pointer)!)
-            return XCTFail("error preparing select: \(errmsg)")
-        }
-
-        guard sqlite3_finalize(statement) == SQLITE_OK else {
-            let errmsg = String(cString: sqlite3_errmsg(connection.pointer)!)
-            return XCTFail("error finalizing prepared statement: \(errmsg)")
-        }
-
+        let statement = try Statement(prepare: query, connection: connection)
+        try statement.execute()
         try connection.close()
     }
 }
