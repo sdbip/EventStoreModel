@@ -9,10 +9,10 @@ public struct EntityStore {
 
     public init() {}
 
-    public func addSchema(dbFile: String) {
-        guard let connection = DbConnection(openFile: dbFile) else { return }
+    public func addSchema(dbFile: String) throws {
+        let connection = try DbConnection(openFile: dbFile)
 
-        sqlite3_exec(connection.pointer, """
+        try connection.execute("""
             create table if not exists Entities (
                 id string primary key,
                 type text,
@@ -27,8 +27,8 @@ public struct EntityStore {
                 version int,
                 position bigint
             )
-            """, nil, nil, nil)
-        connection.close()
+            """)
+        try connection.close()
     }
 
 }

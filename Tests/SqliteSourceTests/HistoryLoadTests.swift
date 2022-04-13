@@ -21,14 +21,12 @@ final class HistoryLoadTests: XCTestCase {
 
     func test_addsSchema() throws {
         let store = EntityStore()
-        store.addSchema(dbFile: testDBFile)
-        assertCanCall(query: "select * from Entities")
+        try store.addSchema(dbFile: testDBFile)
+        try assertCanCall(query: "select * from Entities")
     }
 
-    private func assertCanCall(query: String) {
-        guard let connection = DbConnection(openFile: testDBFile) else {
-            return XCTFail("could not open database")
-        }
+    private func assertCanCall(query: String) throws {
+        let connection = try DbConnection(openFile: testDBFile)
 
         var statement: OpaquePointer?
         guard sqlite3_prepare_v2(connection.pointer, query, -1, &statement, nil) == SQLITE_OK else {
@@ -41,7 +39,7 @@ final class HistoryLoadTests: XCTestCase {
             return XCTFail("error finalizing prepared statement: \(errmsg)")
         }
 
-        connection.close()
+        try connection.close()
     }
 }
 
