@@ -42,12 +42,12 @@ public struct EntityStore {
         guard sqlite3_step(statement.pointer) == SQLITE_ROW else { throw connection.lastError() }
 
         let type = sqlite3_column_text(statement.pointer, 1)
-        let version = sqlite3_column_int64(statement.pointer, 2)
+        let version = sqlite3_column_int(statement.pointer, 2)
 
         guard let type = type else {
             throw SQLiteError.message("type is null")
         }
 
-        return History(type: String(cString: type), events: [], version: .version(Int32(version)))
+        return History(type: String(cString: type), events: [], version: .version(version))
     }
 }
