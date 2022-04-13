@@ -24,5 +24,11 @@ let package = Package(
         .testTarget(
             name: "SourceTests",
             dependencies: ["Source"]),
+        .target(
+            name: "SQLiteSource",
+            dependencies: ["Source"]),
+        .testTarget(
+            name: "SQLiteSourceTests",
+            dependencies: ["SQLiteSource"]),
     ]
 )
