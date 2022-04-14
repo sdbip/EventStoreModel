@@ -50,7 +50,7 @@ public struct EntityStore {
         let statement2 = try Statement(prepare: "SELECT * FROM Entities WHERE id = '" + id + "'", connection: connection)
         return try statement2.single { row in
             guard let type = row.string(at: 1) else { throw SQLiteError.message("Entity has no type") }
-            return History(type: type, events: events, version: .version(row.int32(at: 2)))
+            return History(id: id, type: type, events: events, version: .version(row.int32(at: 2)))
         }
     }
 }

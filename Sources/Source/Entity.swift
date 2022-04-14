@@ -4,6 +4,9 @@ public protocol Entity {
     /// an entity of the wrong type.
     static var type: String { get }
 
+    /// A unique identifier for this entity.
+    var id: String { get }
+
     /// Used to detect concurrent changes to the same entity. If the
     /// version has changed in the database since reconstituting this
     /// entity, it is not safe to publish the changes.
@@ -16,7 +19,7 @@ public protocol Entity {
     // the entity was reconstituted.
     var unpublishedEvents: [UnpublishedEvent] { get }
 
-    init(version: EntityVersion)
+    init(id: String, version: EntityVersion)
 
     /// Applies a published event to update the current state of the entity
     func apply(_ event: PublishedEvent)

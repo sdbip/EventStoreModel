@@ -4,6 +4,7 @@ import Source
 final class ReconstitutionTests: XCTestCase {
     func test_appliesEvents() throws {
         let history = History(
+            id: "test",
             type: "TestEntity",
             events: [PublishedEvent(name: "test")],
             version: 3
@@ -17,6 +18,7 @@ final class ReconstitutionTests: XCTestCase {
 
     func test_setsVersion() throws {
         let history = History(
+            id: "test",
             type: "TestEntity",
             events: [PublishedEvent(name: "test")],
             version: 3
@@ -30,6 +32,7 @@ final class ReconstitutionTests: XCTestCase {
 
     func test_failsIfWrongType() throws {
         let history = History(
+            id: "test",
             type: "NotTestEntity",
             events: [PublishedEvent(name: "test")],
             version: 3

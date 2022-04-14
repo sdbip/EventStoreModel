@@ -3,11 +3,13 @@ import Source
 
 final class TestEntity: Entity {
     static let type = "TestEntity"
+    let id: String
     let version: EntityVersion
     let unpublishedEvents: [UnpublishedEvent]
     var lastReconstitutedEvent: PublishedEvent?
 
-    init(version: EntityVersion) {
+    init(id: String, version: EntityVersion) {
+        self.id = id
         self.version = version
         unpublishedEvents = []
     }
