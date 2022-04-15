@@ -36,6 +36,11 @@ public struct EntityStore {
         try connection.close()
     }
 
+    public func reconstitute<EntityType: Entity>(id: String) throws -> EntityType? {
+        guard let history = try getHistory(id: id) else { return nil }
+        return try history.reconstitute()
+    }
+
     public func getHistory(id: String) throws -> History? {
         let connection = try DbConnection(openFile: dbFile)
 
