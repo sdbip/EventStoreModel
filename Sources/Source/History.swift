@@ -11,7 +11,7 @@ public struct History {
         self.version = version
     }
 
-    public func reconstitute<EntityType: Entity>() throws -> EntityType {
+    public func entity<EntityType: Entity>() throws -> EntityType {
         guard EntityType.type == type else {
             throw ReconstitutionError.incorrectType
         }
