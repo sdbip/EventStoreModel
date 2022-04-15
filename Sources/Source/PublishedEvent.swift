@@ -12,4 +12,10 @@ public struct PublishedEvent {
         self.actor = actor
         self.timestamp = timestamp
     }
+
+    public func details<T>(as type: T.Type) throws -> T? where T: Decodable {
+        guard let data = details.data(using: .utf8) else { return nil }
+        let decoder = JSONDecoder()
+        return try decoder.decode(T.self, from: data)
+    }
 }
