@@ -15,25 +15,16 @@ public struct EntityStore {
     }
 
     public func addSchema() throws {
-        let connection = try DbConnection(openFile: dbFile)
+        guard let schema = try bundledSchema() else { fatalError() }
 
-        try connection.execute("""
-            create table if not exists Entities (
-                id string primary key,
-                type text,
-                version int
-            );
-            create table if not exists Events (
-                entity string references Entities(id),
-                name text,
-                details text,
-                actor text,
-                timestamp real not null default (julianday('now', 'utc')),
-                version int,
-                position bigint
-            )
-            """)
+        let connection = try DbConnection(openFile: dbFile)
+        try connection.execute(schema)
         try connection.close()
+    }
+
+    private func bundledSchema() throws -> String? {
+        guard let schemaFile = Bundle.module.path(forResource: "schema", ofType: "sql") else { return nil }
+        return try NSString(contentsOfFile: schemaFile, encoding: String.Encoding.utf8.rawValue) as String
     }
 
     public func reconstitute<EntityType: Entity>(entityWithId id: String) throws -> EntityType? {

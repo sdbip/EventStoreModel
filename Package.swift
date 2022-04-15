@@ -29,7 +29,8 @@ let package = Package(
             dependencies: ["Source"]),
         .target(
             name: "SQLiteSource",
-            dependencies: ["Source", "SQLite"]),
+            dependencies: ["Source", "SQLite"],
+            resources: [.process("schema.sql")]),
         .testTarget(
             name: "SQLiteSourceTests",
             dependencies: ["SQLiteSource"]),
