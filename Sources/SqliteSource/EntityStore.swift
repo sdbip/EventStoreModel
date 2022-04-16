@@ -29,7 +29,7 @@ public struct EntityStore {
             return PublishedEvent(name: name, details: details, actor: actor, timestamp: Date(julianDay: row.double(at: 4)))
         }
 
-        let statement2 = try Statement(prepare: "SELECT * FROM Entities WHERE id = ?1", connection: connection)
+        let statement2 = try Statement(prepare: "SELECT * FROM Entities WHERE id = ?1 ORDER BY version", connection: connection)
         statement2.bind(id, to: 1)
         return try statement2.single { row in
             guard let type = row.string(at: 1) else { throw SQLiteError.message("Entity has no type") }
