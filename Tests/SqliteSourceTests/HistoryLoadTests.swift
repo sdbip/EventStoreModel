@@ -17,7 +17,7 @@ final class HistoryLoadTests: XCTestCase {
         store = EntityStore(dbFile: testDBFile)
 
         do {
-            try store.addSchema()
+            try Schema.add(to: testDBFile)
         } catch {
             XCTFail("\(error)")
         }
@@ -27,13 +27,6 @@ final class HistoryLoadTests: XCTestCase {
         do {
             try FileManager.default.removeItem(atPath: testDBFile)
         } catch { }
-    }
-
-    func test_addsSchema() throws {
-        let connection = try DbConnection(openFile: testDBFile)
-        let statement = try Statement(prepare: "select * from Entities", connection: connection)
-        try statement.execute()
-        try connection.close()
     }
 
     func test_fetchesEntityData() throws {

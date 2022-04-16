@@ -14,19 +14,6 @@ public struct EntityStore {
         self.dbFile = dbFile
     }
 
-    public func addSchema() throws {
-        guard let schema = try bundledSchema() else { fatalError() }
-
-        let connection = try DbConnection(openFile: dbFile)
-        try connection.execute(schema)
-        try connection.close()
-    }
-
-    private func bundledSchema() throws -> String? {
-        guard let schemaFile = Bundle.module.path(forResource: "schema", ofType: "sql") else { return nil }
-        return try NSString(contentsOfFile: schemaFile, encoding: String.Encoding.utf8.rawValue) as String
-    }
-
     public func reconstitute<EntityType: Entity>(entityWithId id: String) throws -> EntityType? {
         guard let history = try getHistory(id: id) else { return nil }
         return try history.entity()
