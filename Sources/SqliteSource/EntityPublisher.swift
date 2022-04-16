@@ -14,12 +14,19 @@ public struct EntityPublisher {
         let connection = try Connection(openFile: dbFile)
 
         try connection.transaction {
-            let statement = try Statement(
+            let statement1 = try Statement(
                 prepare: "SELECT version FROM Entities WHERE id = ?",
                 connection: connection)
-            statement.bind(entity.id, to: 1)
+            statement1.bind(entity.id, to: 1)
 
-            let version = try statement.single(read: { $0.int32(at: 0) })
+            let version = try statement1.single(read: { $0.int32(at: 0) })
+
+            let statement2 = try Statement(
+                prepare: "SELECT MAX(position) FROM Events WHERE entity = ?",
+                connection: connection)
+            statement2.bind(entity.id, to: 1)
+
+            let position = try statement2.single(read: { $0.int64(at: 0) })
 
             switch (entity.version, version) {
                 case (.notSaved, nil): try connection.add(entity)
@@ -28,8 +35,9 @@ public struct EntityPublisher {
             }
 
             var eventVersion = 1 + (version ?? -1)
+            let eventPosition = 1 + (position ?? -1)
             for event in entity.unpublishedEvents {
-                try connection.publish(event, entityId: entity.id, version: eventVersion, actor: actor)
+                try connection.publish(event, entityId: entity.id, actor: actor, version: eventVersion, position: eventPosition)
                 eventVersion += 1
             }
         }
@@ -45,7 +53,7 @@ private extension Connection {
             connection: self)
         statement.bind(entity.id, to: 1)
         statement.bind(EntityType.type, to: 2)
-        statement.bind(0, to: 3)
+        statement.bind(0 as Int32, to: 3)
         try statement.execute()
     }
 
@@ -59,7 +67,7 @@ private extension Connection {
         try statement.execute()
     }
 
-    func publish(_ event: UnpublishedEvent, entityId: String, version: Int32, actor: String) throws {
+    func publish(_ event: UnpublishedEvent, entityId: String, actor: String, version: Int32, position: Int64) throws {
         let statement = try Statement(prepare: """
             INSERT INTO Events (entity, name, details, actor, version, position)
             VALUES (?, ?, ?, ?, ?, ?);
@@ -70,7 +78,7 @@ private extension Connection {
         statement.bind(event.details, to: 3)
         statement.bind(actor, to: 4)
         statement.bind(version, to: 5)
-        statement.bind(0, to: 6)
+        statement.bind(position, to: 6)
         try statement.execute()
     }
 }

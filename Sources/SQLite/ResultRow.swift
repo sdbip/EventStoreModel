@@ -11,6 +11,10 @@ public struct ResultRow {
         return sqlite3_column_int(pointer, column)
     }
 
+    public func int64(at column: Int32) -> Int64 {
+        return sqlite3_column_int64(pointer, column)
+    }
+
     public func double(at column: Int32) -> Double {
         return sqlite3_column_double(pointer, column)
     }

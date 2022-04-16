@@ -103,6 +103,33 @@ final class PublishingTests: XCTestCase {
         XCTAssertEqual(history?.events[1].name, "SecondEvent")
         XCTAssertEqual(history?.events[2].name, "ThirdEvent")
     }
+
+    func test_updatesPosition() throws {
+        let connection = try Connection(openFile: testDBFile)
+        try connection.execute("""
+            INSERT INTO Entities (id, type, version)
+            VALUES ('test', 'TestEntity', 1);
+
+            INSERT INTO Events (entity, name, details, actor, version, position)
+            VALUES ('test', 'OldEvent', '{}', 'someone', 0, 1);
+            """
+        )
+
+        let entity = TestEntity(id: "test", version: 1)
+        entity.unpublishedEvents.append(UnpublishedEvent(name: "AnEvent", details: "{}"))
+        entity.unpublishedEvents.append(UnpublishedEvent(name: "AnEvent", details: "{}"))
+        entity.unpublishedEvents.append(UnpublishedEvent(name: "AnEvent", details: "{}"))
+
+        try publisher.publishChanges(entity: entity, actor: "user_x")
+
+        let connection2 = try Connection(openFile: testDBFile)
+        let statement = try Statement(
+            prepare: "SELECT MAX(position) FROM Events WHERE entity = 'test'",
+            connection: connection2
+        )
+        let position = try statement.single { $0.int64(at: 0) }
+        XCTAssertEqual(position, 2)
+    }
 }
 
 final class TestEntity: Entity {

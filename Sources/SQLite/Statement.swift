@@ -26,6 +26,10 @@ public struct Statement {
         sqlite3_bind_int(pointer, index, value)
     }
 
+    public func bind(_ value: Int64, to index: Int32) {
+        sqlite3_bind_int64(pointer, index, value)
+    }
+
     public func execute() throws {
         guard sqlite3_step(pointer) == SQLITE_DONE else {
             throw connection.lastError()
