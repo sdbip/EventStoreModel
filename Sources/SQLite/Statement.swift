@@ -2,9 +2,9 @@ import SQLite3
 
 public struct Statement {
     private let pointer: OpaquePointer
-    private let connection: DbConnection
+    private let connection: Connection
 
-    public init(prepare sql: String, connection: DbConnection) throws {
+    public init(prepare sql: String, connection: Connection) throws {
         var statement: OpaquePointer?
         guard sqlite3_prepare_v2(connection.pointer, sql, -1, &statement, nil) == SQLITE_OK else {
             throw connection.lastError()

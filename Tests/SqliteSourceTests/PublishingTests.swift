@@ -29,7 +29,7 @@ final class PublishingTests: XCTestCase {
 
         try publisher.publishChanges(entity: entity)
 
-        _ = try DbConnection(openFile: testDBFile)
+        _ = try Connection(openFile: testDBFile)
     }
 }
 

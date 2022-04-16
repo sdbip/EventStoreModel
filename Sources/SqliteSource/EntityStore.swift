@@ -20,7 +20,7 @@ public struct EntityStore {
     }
 
     public func getHistory(id: String) throws -> History? {
-        let connection = try DbConnection(openFile: dbFile)
+        let connection = try Connection(openFile: dbFile)
 
         let statement1 = try Statement(prepare: "SELECT * FROM Events WHERE entity = '" + id + "'", connection: connection)
         let events = try statement1.query { row -> PublishedEvent in

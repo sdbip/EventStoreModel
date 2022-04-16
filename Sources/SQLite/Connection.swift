@@ -1,6 +1,6 @@
 import SQLite3
 
-public struct DbConnection {
+public struct Connection {
     internal let pointer: OpaquePointer
 
     public init(openFile file: String) throws {
