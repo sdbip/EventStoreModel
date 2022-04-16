@@ -15,11 +15,16 @@ public struct EntityPublisher {
 
         try connection.transaction {
             let statement = try Statement(
-                prepare: "SELECT COUNT(*) FROM Entities WHERE id = ?",
+                prepare: "SELECT version FROM Entities WHERE id = ?",
                 connection: connection)
             statement.bind(entity.id, to: 1)
-            if try statement.single(read: { $0.int32(at: 0) }) == 0 {
-                try connection.add(entity)
+
+            let version = try statement.single(read: { $0.int32(at: 0) })
+
+            switch (entity.version, version) {
+                case (.notSaved, nil): try connection.add(entity)
+                case (.version(let v1), let v2) where v1 == v2: break
+                default: throw SQLiteError.message("Concurrency Error")
             }
 
             for event in entity.unpublishedEvents {
