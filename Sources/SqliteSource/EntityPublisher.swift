@@ -14,7 +14,13 @@ public struct EntityPublisher {
         let connection = try Connection(openFile: dbFile)
 
         try connection.transaction {
-            try connection.add(entity)
+            let statement = try Statement(
+                prepare: "SELECT COUNT(*) FROM Entities WHERE id = ?",
+                connection: connection)
+            statement.bind(entity.id, to: 1)
+            if try statement.single(read: { $0.int32(at: 0) }) == 0 {
+                try connection.add(entity)
+            }
 
             for event in entity.unpublishedEvents {
                 try connection.publish(event, entityId: entity.id, actor: actor)

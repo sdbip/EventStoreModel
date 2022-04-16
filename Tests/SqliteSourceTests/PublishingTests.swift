@@ -50,6 +50,25 @@ final class PublishingTests: XCTestCase {
         let history = try EntityStore(dbFile: testDBFile).getHistory(id: "test")
         XCTAssertEqual(history?.events.count, 3)
     }
+
+    func test_canPublishToExistingEntity() throws {
+        let connection = try Connection(openFile: testDBFile)
+        try connection.execute("""
+            INSERT INTO Entities (id, type, version)
+            VALUES ('test', 'TestEntity', 0);
+            """
+        )
+
+        let entity = TestEntity(id: "test", version: .notSaved)
+        entity.unpublishedEvents.append(UnpublishedEvent(name: "AnEvent", details: "{}"))
+        entity.unpublishedEvents.append(UnpublishedEvent(name: "AnEvent", details: "{}"))
+        entity.unpublishedEvents.append(UnpublishedEvent(name: "AnEvent", details: "{}"))
+
+        try publisher.publishChanges(entity: entity, actor: "user_x")
+
+        let history = try EntityStore(dbFile: testDBFile).getHistory(id: "test")
+        XCTAssertEqual(history?.events.count, 3)
+    }
 }
 
 final class TestEntity: Entity {
