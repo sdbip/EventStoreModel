@@ -123,11 +123,9 @@ final class PublishingTests: XCTestCase {
         try publisher.publishChanges(entity: entity, actor: "user_x")
 
         let connection2 = try Connection(openFile: testDBFile)
-        let statement = try Statement(
-            prepare: "SELECT MAX(position) FROM Events WHERE entity = 'test'",
-            connection: connection2
-        )
-        let position = try statement.single { $0.int64(at: 0) }
+        let position = try connection2.operation(
+            "SELECT MAX(position) FROM Events WHERE entity = 'test'"
+        ).single { $0.int64(at: 0) }
         XCTAssertEqual(position, 2)
     }
 }

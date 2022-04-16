@@ -21,9 +21,11 @@ public struct EntityStore {
 
         let events = try connection.allEvents(forEntityWithId: id)
 
-        let statement = try Statement(prepare: "SELECT * FROM Entities WHERE id = ?1 ORDER BY version", connection: connection)
-        statement.bind(id, to: 1)
-        return try statement.single { row in
+        let operation = try connection.operation(
+            "SELECT * FROM Entities WHERE id = ?1 ORDER BY version",
+            id
+        )
+        return try operation.single { row in
             guard let type = row.string(at: 1) else { throw SQLiteError.message("Entity has no type") }
             return History(id: id, type: type, events: events, version: .version(row.int32(at: 2)))
         }
@@ -32,15 +34,13 @@ public struct EntityStore {
 
 private extension Connection {
     func allEvents(forEntityWithId entityId: String) throws -> [PublishedEvent] {
-        let statement = try Statement(prepare: "SELECT * FROM Events WHERE entity = ?1", connection: self)
-        statement.bind(entityId, to: 1)
-
-        return try statement.query { row -> PublishedEvent in
-            guard let name = row.string(at: 1) else { throw SQLiteError.message("Event has no name") }
-            guard let details = row.string(at: 2) else { throw SQLiteError.message("Event has no details") }
-            guard let actor = row.string(at: 3) else { throw SQLiteError.message("Event has no actor") }
-            return PublishedEvent(name: name, details: details, actor: actor, timestamp: Date(julianDay: row.double(at: 4)))
-        }
+        return try self.operation("SELECT * FROM Events WHERE entity = ?", entityId)
+            .query { row -> PublishedEvent in
+                guard let name = row.string(at: 1) else { throw SQLiteError.message("Event has no name") }
+                guard let details = row.string(at: 2) else { throw SQLiteError.message("Event has no details") }
+                guard let actor = row.string(at: 3) else { throw SQLiteError.message("Event has no actor") }
+                return PublishedEvent(name: name, details: details, actor: actor, timestamp: Date(julianDay: row.double(at: 4)))
+            }
     }
 }
 

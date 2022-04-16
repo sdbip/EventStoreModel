@@ -28,11 +28,7 @@ final class HistoryLoadTests: XCTestCase {
 
     func test_fetchesEntityData() throws {
         let connection = try Connection(openFile: testDBFile)
-        let statement = try Statement(
-            prepare: "insert into Entities (id, type, version) values ('test', 'TheType', 42)",
-            connection: connection
-        )
-        try statement.execute()
+        try connection.execute("insert into Entities (id, type, version) values ('test', 'TheType', 42)")
         try connection.close()
 
         let history = try store.getHistory(id: "test")

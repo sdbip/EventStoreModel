@@ -2,11 +2,34 @@ import SQLite3
 
 private let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
 
-public struct Statement {
+public protocol Bindable {
+    func bind(to pointer: OpaquePointer, index: Int32)
+}
+
+extension String: Bindable {
+    public func bind(to pointer: OpaquePointer, index: Int32) {
+        sqlite3_bind_text(pointer, index, self, -1, SQLITE_TRANSIENT)
+    }
+}
+
+extension Int32: Bindable {
+    public func bind(to pointer: OpaquePointer, index: Int32) {
+        sqlite3_bind_int(pointer, index, self)
+    }
+}
+
+extension Int64: Bindable {
+    public func bind(to pointer: OpaquePointer, index: Int32) {
+        sqlite3_bind_int64(pointer, index, self)
+    }
+}
+
+
+public struct Operation {
     private let pointer: OpaquePointer
     private let connection: Connection
 
-    public init(prepare sql: String, connection: Connection) throws {
+    public init(connection: Connection, sql: String, _ parameters: [Bindable]) throws {
         var statement: OpaquePointer?
         guard sqlite3_prepare_v2(connection.pointer, sql, Int32(sql.utf8.count), &statement, nil) == SQLITE_OK else {
             throw connection.lastError()
@@ -16,18 +39,10 @@ public struct Statement {
         }
         pointer = statement
         self.connection = connection
-    }
 
-    public func bind(_ value: String, to index: Int32) {
-        sqlite3_bind_text(pointer, index, value, -1, SQLITE_TRANSIENT)
-    }
-
-    public func bind(_ value: Int32, to index: Int32) {
-        sqlite3_bind_int(pointer, index, value)
-    }
-
-    public func bind(_ value: Int64, to index: Int32) {
-        sqlite3_bind_int64(pointer, index, value)
+        for (i, parameter) in parameters.enumerated() {
+            parameter.bind(to: pointer, index: Int32(i + 1))
+        }
     }
 
     public func execute() throws {

@@ -14,31 +14,25 @@ public struct EntityPublisher {
         let connection = try Connection(openFile: dbFile)
 
         try connection.transaction {
-            let statement1 = try Statement(
-                prepare: "SELECT version FROM Entities WHERE id = ?",
-                connection: connection)
-            statement1.bind(entity.id, to: 1)
+            let currentVersion = try connection
+                .operation("SELECT version FROM Entities WHERE id = ?", entity.id)
+                .single(read: { $0.int32(at: 0) })
 
-            let version = try statement1.single(read: { $0.int32(at: 0) })
-
-            let statement2 = try Statement(
-                prepare: "SELECT MAX(position) FROM Events WHERE entity = ?",
-                connection: connection)
-            statement2.bind(entity.id, to: 1)
-
-            let position = try statement2.single(read: { $0.int64(at: 0) })
-
-            switch (entity.version, version) {
+            switch (entity.version, currentVersion) {
                 case (.notSaved, nil): try connection.add(entity)
-                case (.version(let v1), let v2) where v1 == v2: try connection.updateVersion(of: entity, version: (version ?? -1) + Int32(entity.unpublishedEvents.count))
+                case (.version(let v1), let v2) where v1 == v2: try connection.updateVersion(of: entity, version: (currentVersion ?? -1) + Int32(entity.unpublishedEvents.count))
                 default: throw SQLiteError.message("Concurrency Error")
             }
 
-            var eventVersion = 1 + (version ?? -1)
-            let eventPosition = 1 + (position ?? -1)
+            let currentPosition = try connection
+                .operation("SELECT MAX(position) FROM Events WHERE entity = ?", entity.id)
+                .single(read: { $0.int64(at: 0) })
+            let nextPosition = 1 + (currentPosition ?? -1)
+
+            var nextVersion = 1 + (currentVersion ?? -1)
             for event in entity.unpublishedEvents {
-                try connection.publish(event, entityId: entity.id, actor: actor, version: eventVersion, position: eventPosition)
-                eventVersion += 1
+                try connection.publish(event, entityId: entity.id, actor: actor, version: nextVersion, position: nextPosition)
+                nextVersion += 1
             }
         }
     }
@@ -46,39 +40,37 @@ public struct EntityPublisher {
 
 private extension Connection {
     func add<EntityType>(_ entity: EntityType) throws where EntityType: Entity {
-        let statement = try Statement(prepare: """
+        try self.operation(
+            """
             INSERT INTO Entities (id, type, version)
             VALUES (?, ?, ?);
             """,
-            connection: self)
-        statement.bind(entity.id, to: 1)
-        statement.bind(EntityType.type, to: 2)
-        statement.bind(0 as Int32, to: 3)
-        try statement.execute()
+            entity.id,
+            EntityType.type,
+            0 as Int32
+        ).execute()
     }
 
     func updateVersion(of entity: Entity, version: Int32) throws {
-        let statement = try Statement(
-            prepare: "UPDATE Entities SET version = ? WHERE id = ?",
-            connection: self
-        )
-        statement.bind(version, to: 1)
-        statement.bind(entity.id, to: 2)
-        try statement.execute()
+        try self.operation(
+            "UPDATE Entities SET version = ? WHERE id = ?",
+            version,
+            entity.id
+        ).execute()
     }
 
     func publish(_ event: UnpublishedEvent, entityId: String, actor: String, version: Int32, position: Int64) throws {
-        let statement = try Statement(prepare: """
+        try self.operation(
+            """
             INSERT INTO Events (entity, name, details, actor, version, position)
             VALUES (?, ?, ?, ?, ?, ?);
             """,
-            connection: self)
-        statement.bind(entityId, to: 1)
-        statement.bind(event.name, to: 2)
-        statement.bind(event.details, to: 3)
-        statement.bind(actor, to: 4)
-        statement.bind(version, to: 5)
-        statement.bind(position, to: 6)
-        try statement.execute()
+            entityId,
+            event.name,
+            event.details,
+            actor,
+            version,
+            position
+        ).execute()
     }
 }

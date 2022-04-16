@@ -11,6 +11,10 @@ public struct Connection {
         pointer = connection!
     }
 
+    public func operation(_ sql: String, _ parameters: Bindable...) throws -> Operation {
+        return try Operation(connection: self, sql: sql, parameters)
+    }
+
     public func transaction(do block: () throws -> Void)  rethrows {
         sqlite3_exec(self.pointer, "BEGIN", nil, nil, nil)
         do {
