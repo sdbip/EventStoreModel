@@ -38,6 +38,18 @@ final class PublishingTests: XCTestCase {
         XCTAssertEqual(history?.events[0].details, "{}")
         XCTAssertEqual(history?.events[0].actor, "user_x")
     }
+
+    func test_canPublishMultipleEvents() throws {
+        let entity = TestEntity(id: "test", version: .notSaved)
+        entity.unpublishedEvents.append(UnpublishedEvent(name: "AnEvent", details: "{}"))
+        entity.unpublishedEvents.append(UnpublishedEvent(name: "AnEvent", details: "{}"))
+        entity.unpublishedEvents.append(UnpublishedEvent(name: "AnEvent", details: "{}"))
+
+        try publisher.publishChanges(entity: entity, actor: "user_x")
+
+        let history = try EntityStore(dbFile: testDBFile).getHistory(id: "test")
+        XCTAssertEqual(history?.events.count, 3)
+    }
 }
 
 final class TestEntity: Entity {
