@@ -19,21 +19,27 @@ public struct EntityStore {
     public func getHistory(id: String) throws -> History? {
         let connection = try Connection(openFile: dbFile)
 
-        let statement1 = try Statement(prepare: "SELECT * FROM Events WHERE entity = ?1", connection: connection)
-        statement1.bind(id, to: 1)
+        let events = try connection.allEvents(forEntityWithId: id)
 
-        let events = try statement1.query { row -> PublishedEvent in
+        let statement = try Statement(prepare: "SELECT * FROM Entities WHERE id = ?1 ORDER BY version", connection: connection)
+        statement.bind(id, to: 1)
+        return try statement.single { row in
+            guard let type = row.string(at: 1) else { throw SQLiteError.message("Entity has no type") }
+            return History(id: id, type: type, events: events, version: .version(row.int32(at: 2)))
+        }
+    }
+}
+
+private extension Connection {
+    func allEvents(forEntityWithId entityId: String) throws -> [PublishedEvent] {
+        let statement = try Statement(prepare: "SELECT * FROM Events WHERE entity = ?1", connection: self)
+        statement.bind(entityId, to: 1)
+
+        return try statement.query { row -> PublishedEvent in
             guard let name = row.string(at: 1) else { throw SQLiteError.message("Event has no name") }
             guard let details = row.string(at: 2) else { throw SQLiteError.message("Event has no details") }
             guard let actor = row.string(at: 3) else { throw SQLiteError.message("Event has no actor") }
             return PublishedEvent(name: name, details: details, actor: actor, timestamp: Date(julianDay: row.double(at: 4)))
-        }
-
-        let statement2 = try Statement(prepare: "SELECT * FROM Entities WHERE id = ?1 ORDER BY version", connection: connection)
-        statement2.bind(id, to: 1)
-        return try statement2.single { row in
-            guard let type = row.string(at: 1) else { throw SQLiteError.message("Entity has no type") }
-            return History(id: id, type: type, events: events, version: .version(row.int32(at: 2)))
         }
     }
 }
