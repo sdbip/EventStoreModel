@@ -22,7 +22,9 @@ public struct EntityStore {
     public func getHistory(id: String) throws -> History? {
         let connection = try Connection(openFile: dbFile)
 
-        let statement1 = try Statement(prepare: "SELECT * FROM Events WHERE entity = '" + id + "'", connection: connection)
+        let statement1 = try Statement(prepare: "SELECT * FROM Events WHERE entity = ?1", connection: connection)
+        statement1.bind(id, to: 1)
+
         let events = try statement1.query { row -> PublishedEvent in
             guard let name = row.string(at: 1) else { throw SQLiteError.message("Event has no name") }
             guard let details = row.string(at: 2) else { throw SQLiteError.message("Event has no details") }
@@ -30,7 +32,8 @@ public struct EntityStore {
             return PublishedEvent(name: name, details: details, actor: actor, timestamp: Date(julianDay: row.double(at: 4)))
         }
 
-        let statement2 = try Statement(prepare: "SELECT * FROM Entities WHERE id = '" + id + "'", connection: connection)
+        let statement2 = try Statement(prepare: "SELECT * FROM Entities WHERE id = ?1", connection: connection)
+        statement2.bind(id, to: 1)
         return try statement2.single { row in
             guard let type = row.string(at: 1) else { throw SQLiteError.message("Entity has no type") }
             return History(id: id, type: type, events: events, version: .version(row.int32(at: 2)))

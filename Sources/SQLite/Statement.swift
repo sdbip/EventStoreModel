@@ -13,6 +13,10 @@ public struct Statement {
         self.connection = connection
     }
 
+    public func bind(_ value: String, to index: Int32) {
+        sqlite3_bind_text(pointer, index, value, Int32(value.count), nil)
+    }
+
     public func execute() throws {
         guard sqlite3_step(pointer) == SQLITE_DONE else {
             throw connection.lastError()
