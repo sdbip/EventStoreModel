@@ -24,8 +24,8 @@ final class PublishingTests: XCTestCase {
     }
 
     func test_canPublishSingleEvent() throws {
-        let entity = Counter(id: "counter", version: .notSaved)
-        entity.step()
+        let entity = TestEntity(id: "test", version: .notSaved)
+        entity.unpublishedEvents.append(UnpublishedEvent(name: "AnEvent", details: "{}"))
 
         try publisher.publishChanges(entity: entity)
 
@@ -33,8 +33,8 @@ final class PublishingTests: XCTestCase {
     }
 }
 
-final class Counter: Entity {
-    static let type = "Counter"
+final class TestEntity: Entity {
+    static let type = "TestEntity"
 
     let id: String
     let version: EntityVersion
@@ -43,10 +43,6 @@ final class Counter: Entity {
     public init(id: String, version: EntityVersion) {
         self.id = id
         self.version = version
-    }
-
-    func step() {
-        unpublishedEvents.append(UnpublishedEvent(name: "DidStep", details: "{}"))
     }
 
     func apply(_ event: PublishedEvent) {}
