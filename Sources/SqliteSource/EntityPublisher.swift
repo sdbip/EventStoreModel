@@ -23,7 +23,7 @@ public struct EntityPublisher {
 
             switch (entity.version, version) {
                 case (.notSaved, nil): try connection.add(entity)
-                case (.version(let v1), let v2) where v1 == v2: break
+                case (.version(let v1), let v2) where v1 == v2: try connection.updateVersion(of: entity)
                 default: throw SQLiteError.message("Concurrency Error")
             }
 
@@ -44,6 +44,16 @@ private extension Connection {
         statement.bind(entity.id, to: 1)
         statement.bind(EntityType.type, to: 2)
         statement.bind(0, to: 3)
+        try statement.execute()
+    }
+
+    func updateVersion(of entity: Entity) throws {
+        let statement = try Statement(
+            prepare: "UPDATE Entities SET version = ? WHERE id = ?",
+            connection: self
+        )
+        statement.bind(entity.version.next, to: 1)
+        statement.bind(entity.id, to: 2)
         try statement.execute()
     }
 

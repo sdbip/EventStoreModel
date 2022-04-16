@@ -81,6 +81,23 @@ final class PublishingTests: XCTestCase {
 
         XCTAssertThrowsError(try publisher.publishChanges(entity: entity, actor: "user_x"))
     }
+
+    func test_updatesVersion() throws {
+        let connection = try Connection(openFile: testDBFile)
+        try connection.execute("""
+            INSERT INTO Entities (id, type, version)
+            VALUES ('test', 'TestEntity', 1);
+            """
+        )
+
+        let entity = TestEntity(id: "test", version: 1)
+        entity.unpublishedEvents.append(UnpublishedEvent(name: "AnEvent", details: "{}"))
+
+        try publisher.publishChanges(entity: entity, actor: "user_x")
+
+        let history = try EntityStore(dbFile: testDBFile).getHistory(id: "test")
+        XCTAssertEqual(history?.version, 2)
+    }
 }
 
 final class TestEntity: Entity {
