@@ -27,9 +27,16 @@ final class PublishingTests: XCTestCase {
         let entity = TestEntity(id: "test", version: .notSaved)
         entity.unpublishedEvents.append(UnpublishedEvent(name: "AnEvent", details: "{}"))
 
-        try publisher.publishChanges(entity: entity)
+        try publisher.publishChanges(entity: entity, actor: "user_x")
 
-        _ = try Connection(openFile: testDBFile)
+        let history = try EntityStore(dbFile: testDBFile).getHistory(id: "test")
+        XCTAssertEqual(history?.type, TestEntity.type)
+        XCTAssertEqual(history?.id, "test")
+        XCTAssertEqual(history?.version, 0)
+        XCTAssertEqual(history?.events.count, 1)
+        XCTAssertEqual(history?.events[0].name, "AnEvent")
+        XCTAssertEqual(history?.events[0].details, "{}")
+        XCTAssertEqual(history?.events[0].actor, "user_x")
     }
 }
 
