@@ -23,12 +23,14 @@ public struct EntityPublisher {
 
             switch (entity.version, version) {
                 case (.notSaved, nil): try connection.add(entity)
-                case (.version(let v1), let v2) where v1 == v2: try connection.updateVersion(of: entity)
+                case (.version(let v1), let v2) where v1 == v2: try connection.updateVersion(of: entity, version: (version ?? -1) + Int32(entity.unpublishedEvents.count))
                 default: throw SQLiteError.message("Concurrency Error")
             }
 
+            var eventVersion = 1 + (version ?? -1)
             for event in entity.unpublishedEvents {
-                try connection.publish(event, entityId: entity.id, actor: actor)
+                try connection.publish(event, entityId: entity.id, version: eventVersion, actor: actor)
+                eventVersion += 1
             }
         }
     }
@@ -47,17 +49,17 @@ private extension Connection {
         try statement.execute()
     }
 
-    func updateVersion(of entity: Entity) throws {
+    func updateVersion(of entity: Entity, version: Int32) throws {
         let statement = try Statement(
             prepare: "UPDATE Entities SET version = ? WHERE id = ?",
             connection: self
         )
-        statement.bind(entity.version.next, to: 1)
+        statement.bind(version, to: 1)
         statement.bind(entity.id, to: 2)
         try statement.execute()
     }
 
-    func publish(_ event: UnpublishedEvent, entityId: String, actor: String) throws {
+    func publish(_ event: UnpublishedEvent, entityId: String, version: Int32, actor: String) throws {
         let statement = try Statement(prepare: """
             INSERT INTO Events (entity, name, details, actor, version, position)
             VALUES (?, ?, ?, ?, ?, ?);
@@ -67,7 +69,7 @@ private extension Connection {
         statement.bind(event.name, to: 2)
         statement.bind(event.details, to: 3)
         statement.bind(actor, to: 4)
-        statement.bind(0, to: 5)
+        statement.bind(version, to: 5)
         statement.bind(0, to: 6)
         try statement.execute()
     }
