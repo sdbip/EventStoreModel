@@ -11,6 +11,17 @@ public struct Connection {
         pointer = connection!
     }
 
+    public func transaction(do block: () throws -> Void)  rethrows {
+        sqlite3_exec(self.pointer, "BEGIN", nil, nil, nil)
+        do {
+            try block()
+            sqlite3_exec(self.pointer, "COMMIT", nil, nil, nil)
+        } catch {
+            sqlite3_exec(self.pointer, "ROLLBACK", nil, nil, nil)
+            throw error
+        }
+    }
+
     public func execute(_ statement: String) throws {
         if sqlite3_exec(pointer, statement, nil, nil, nil) != SQLITE_OK {
             throw lastError()
