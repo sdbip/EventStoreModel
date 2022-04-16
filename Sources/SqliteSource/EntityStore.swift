@@ -4,9 +4,6 @@ import SQLite3
 import Source
 import SQLite
 
-private let SQLITE_STATIC = unsafeBitCast(0, to: sqlite3_destructor_type.self)
-private let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
-
 public struct EntityStore {
     private let dbFile: String
 

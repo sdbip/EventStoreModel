@@ -5,9 +5,6 @@ import Source
 import SQLite
 import SQLiteSource
 
-internal let SQLITE_STATIC = unsafeBitCast(0, to: sqlite3_destructor_type.self)
-internal let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
-
 let testDBFile = "test.db"
 
 final class HistoryLoadTests: XCTestCase {
