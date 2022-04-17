@@ -39,7 +39,7 @@ private extension Connection {
                 guard let name = row.string(at: 1) else { throw SQLiteError.message("Event has no name") }
                 guard let details = row.string(at: 2) else { throw SQLiteError.message("Event has no details") }
                 guard let actor = row.string(at: 3) else { throw SQLiteError.message("Event has no actor") }
-                return PublishedEvent(name: name, details: details, actor: actor, timestamp: Date(julianDay: row.double(at: 4)))
+                return PublishedEvent(name: name, details: details, actor: actor, timestamp: row.date(at: 4))
             }
     }
 }
@@ -49,8 +49,10 @@ private extension Connection {
 // Those dates are 2451910.5 days apart.
 let julianDayAtReferenceDate = 2451910.5
 let secondsPerDay = 86_400 as Double
-extension Date {
-    public init(julianDay: Double) {
-        self.init(timeIntervalSinceReferenceDate: (julianDay - julianDayAtReferenceDate) * secondsPerDay)
+extension ResultRow {
+    public func date(at column: Int32) -> Date {
+        let julianDay = double(at: column)
+        let timeInterval = (julianDay - julianDayAtReferenceDate) * secondsPerDay
+        return Date(timeIntervalSinceReferenceDate: timeInterval)
     }
 }
