@@ -31,7 +31,7 @@ final class HistoryLoadTests: XCTestCase {
         try connection.execute("insert into Entities (id, type, version) values ('test', 'TheType', 42)")
         try connection.close()
 
-        let history = try store.getHistory(id: "test")
+        let history = try store.history(forEntityWithId: "test")
         XCTAssertEqual(history?.type, "TheType")
         XCTAssertEqual(history?.version, 42)
     }
@@ -47,7 +47,7 @@ final class HistoryLoadTests: XCTestCase {
         )
         try connection.close()
 
-        guard let history = try store.getHistory(id: "test") else { return XCTFail("No history returned") }
+        guard let history = try store.history(forEntityWithId: "test") else { return XCTFail("No history returned") }
 
         XCTAssertEqual(history.events.count, 1)
 
@@ -67,7 +67,7 @@ final class HistoryLoadTests: XCTestCase {
         )
         try connection.close()
 
-        guard let history = try store.getHistory(id: "test") else { return XCTFail("No history returned") }
+        guard let history = try store.history(forEntityWithId: "test") else { return XCTFail("No history returned") }
         guard let event = history.events.first else { return XCTFail("No event returned")}
 
         XCTAssertEqual("\(formatWithMilliseconds(date: event.timestamp))", "2022-04-13 16:07:40.512 +0000")

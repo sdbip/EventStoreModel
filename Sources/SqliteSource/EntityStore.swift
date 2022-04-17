@@ -12,11 +12,11 @@ public struct EntityStore {
     }
 
     public func reconstitute<EntityType: Entity>(entityWithId id: String) throws -> EntityType? {
-        guard let history = try getHistory(id: id) else { return nil }
+        guard let history = try history(forEntityWithId: id) else { return nil }
         return try history.entity()
     }
 
-    public func getHistory(id: String) throws -> History? {
+    public func history(forEntityWithId id: String) throws -> History? {
         let connection = try Connection(openFile: dbFile)
 
         return try connection.transaction {

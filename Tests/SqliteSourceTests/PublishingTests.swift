@@ -29,7 +29,7 @@ final class PublishingTests: XCTestCase {
 
         try publisher.publishChanges(entity: entity, actor: "user_x")
 
-        let history = try EntityStore(dbFile: testDBFile).getHistory(id: "test")
+        let history = try EntityStore(dbFile: testDBFile).history(forEntityWithId: "test")
         XCTAssertEqual(history?.type, TestEntity.type)
         XCTAssertEqual(history?.id, "test")
         XCTAssertEqual(history?.version, 0)
@@ -47,7 +47,7 @@ final class PublishingTests: XCTestCase {
 
         try publisher.publishChanges(entity: entity, actor: "user_x")
 
-        let history = try EntityStore(dbFile: testDBFile).getHistory(id: "test")
+        let history = try EntityStore(dbFile: testDBFile).history(forEntityWithId: "test")
         XCTAssertEqual(history?.events.count, 3)
     }
 
@@ -64,7 +64,7 @@ final class PublishingTests: XCTestCase {
 
         try publisher.publishChanges(entity: entity, actor: "user_x")
 
-        let history = try EntityStore(dbFile: testDBFile).getHistory(id: "test")
+        let history = try EntityStore(dbFile: testDBFile).history(forEntityWithId: "test")
         XCTAssertEqual(history?.events.count, 1)
     }
 
@@ -97,7 +97,7 @@ final class PublishingTests: XCTestCase {
 
         try publisher.publishChanges(entity: entity, actor: "user_x")
 
-        let history = try EntityStore(dbFile: testDBFile).getHistory(id: "test")
+        let history = try EntityStore(dbFile: testDBFile).history(forEntityWithId: "test")
         XCTAssertEqual(history?.version, 4)
         XCTAssertEqual(history?.events[0].name, "FirstEvent")
         XCTAssertEqual(history?.events[1].name, "SecondEvent")
