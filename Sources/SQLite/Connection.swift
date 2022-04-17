@@ -15,11 +15,12 @@ public struct Connection {
         return try Operation(connection: self, sql: sql, parameters)
     }
 
-    public func transaction(do block: () throws -> Void)  rethrows {
+    public func transaction<T>(do block: () throws -> T) rethrows -> T {
         sqlite3_exec(self.pointer, "BEGIN", nil, nil, nil)
         do {
-            try block()
+            let result = try block()
             sqlite3_exec(self.pointer, "COMMIT", nil, nil, nil)
+            return result
         } catch {
             sqlite3_exec(self.pointer, "ROLLBACK", nil, nil, nil)
             throw error

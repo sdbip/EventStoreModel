@@ -19,15 +19,17 @@ public struct EntityStore {
     public func getHistory(id: String) throws -> History? {
         let connection = try Connection(openFile: dbFile)
 
-        let events = try connection.allEvents(forEntityWithId: id)
+        return try connection.transaction {
+            let events = try connection.allEvents(forEntityWithId: id)
 
-        let operation = try connection.operation(
-            "SELECT * FROM Entities WHERE id = ?1 ORDER BY version",
-            id
-        )
-        return try operation.single { row in
-            guard let type = row.string(at: 1) else { throw SQLiteError.message("Entity has no type") }
-            return History(id: id, type: type, events: events, version: .version(row.int32(at: 2)))
+            let operation = try connection.operation(
+                "SELECT * FROM Entities WHERE id = ?1 ORDER BY version",
+                id
+            )
+            return try operation.single { row in
+                guard let type = row.string(at: 1) else { throw SQLiteError.message("Entity has no type") }
+                return History(id: id, type: type, events: events, version: .version(row.int32(at: 2)))
+            }
         }
     }
 }
