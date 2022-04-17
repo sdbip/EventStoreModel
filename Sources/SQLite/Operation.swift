@@ -16,7 +16,9 @@ public struct Operation {
         self.connection = connection
 
         for (i, parameter) in parameters.enumerated() {
-            parameter.bind(to: pointer, index: Int32(i + 1))
+            if parameter.statusCode(bindingTo: pointer, at: Int32(i + 1)) != SQLITE_OK {
+                throw connection.lastError()
+            }
         }
     }
 
