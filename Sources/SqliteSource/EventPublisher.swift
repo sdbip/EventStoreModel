@@ -3,7 +3,7 @@ import Foundation
 import Source
 import SQLite
 
-public struct EntityPublisher {
+public struct EventPublisher {
     private let dbFile: String
 
     public init(dbFile: String) {

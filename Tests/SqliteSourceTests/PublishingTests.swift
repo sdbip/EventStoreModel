@@ -5,10 +5,10 @@ import SQLite
 import SQLiteSource
 
 final class PublishingTests: XCTestCase {
-    var publisher: EntityPublisher!
+    var publisher: EventPublisher!
 
     override func setUp() {
-        publisher = EntityPublisher(dbFile: testDBFile)
+        publisher = EventPublisher(dbFile: testDBFile)
 
         do {
             try Schema.add(to: testDBFile)
