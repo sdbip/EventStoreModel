@@ -19,7 +19,7 @@ public struct EventPublisher {
                 .single(read: { $0.int32(at: 0) })
 
             switch (entity.version, currentVersion) {
-                case (.notSaved, nil): try connection.add(entity)
+                case (.notSaved, nil): try connection.addEntity(entity)
                 case (.version(let v1), let v2) where v1 == v2: try connection.updateVersion(of: entity, version: (currentVersion ?? -1) + Int32(entity.unpublishedEvents.count))
                 default: throw SQLiteError.message("Concurrency Error")
             }
@@ -39,15 +39,14 @@ public struct EventPublisher {
 }
 
 private extension Connection {
-    func add<EntityType>(_ entity: EntityType) throws where EntityType: Entity {
+    func addEntity<EntityType>(_ entity: EntityType) throws where EntityType: Entity {
         try self.operation(
             """
             INSERT INTO Entities (id, type, version)
-            VALUES (?, ?, ?);
+            VALUES (?, ?, 0);
             """,
             entity.id,
-            EntityType.type,
-            0 as Int32
+            EntityType.type
         ).execute()
     }
 
