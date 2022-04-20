@@ -52,6 +52,7 @@ final class PublishingTests: XCTestCase {
 
         let history = try EntityStore(dbFile: testDBFile).history(forEntityWithId: "test")
         XCTAssertEqual(history?.events.count, 3)
+        XCTAssertEqual(history?.version, 2)
     }
 
     func test_canPublishToExistingEntity() throws {

@@ -13,15 +13,16 @@ public struct EventPublisher {
     public func publishChanges<EntityType>(entity: EntityType, actor: String) throws where EntityType: Entity {
         let connection = try Connection(openFile: dbFile)
 
-        try connection.transaction {
-            let currentVersion = try connection
-                .operation("SELECT version FROM Entities WHERE id = ?", entity.id)
-                .single(read: { $0.int32(at: 0) })
+        let events = entity.unpublishedEvents
 
-            switch (entity.version, currentVersion) {
-                case (.notSaved, nil): try connection.addEntity(entity)
-                case (.version(let v1), let v2) where v1 == v2: try connection.updateVersion(of: entity, version: (currentVersion ?? -1) + Int32(entity.unpublishedEvents.count))
-                default: throw SQLiteError.message("Concurrency Error")
+        try connection.transaction {
+            guard try connection.isUnchanged(entity) else { throw SQLiteError.message("Concurrency Error") }
+
+            switch entity.version {
+                case .version(let v):
+                    try connection.updateVersion(of: entity, to: Int32(events.count) + v)
+                default:
+                    try connection.addEntity(entity, version: Int32(events.count) - 1)
             }
 
             let currentPosition = try connection
@@ -29,8 +30,8 @@ public struct EventPublisher {
                 .single(read: { $0.int64(at: 0) })
             let nextPosition = 1 + (currentPosition ?? -1)
 
-            var nextVersion = 1 + (currentVersion ?? -1)
-            for event in entity.unpublishedEvents {
+            var nextVersion = entity.version.next
+            for event in events {
                 try connection.publish(event, entityId: entity.id, actor: actor, version: nextVersion, position: nextPosition)
                 nextVersion += 1
             }
@@ -39,18 +40,33 @@ public struct EventPublisher {
 }
 
 private extension Connection {
-    func addEntity<EntityType>(_ entity: EntityType) throws where EntityType: Entity {
+    func isUnchanged(_ entity: Entity) throws -> Bool {
+        let expectedVersion: Int32?
+        switch entity.version {
+            case .notSaved: expectedVersion = nil
+            case .version(let v): expectedVersion = v
+        }
+
+        let currentVersion = try self
+            .operation("SELECT version FROM Entities WHERE id = ?", entity.id)
+            .single(read: { $0.int32(at: 0) })
+
+        return expectedVersion == currentVersion
+    }
+
+    func addEntity<EntityType>(_ entity: EntityType, version: Int32) throws where EntityType: Entity {
         try self.operation(
             """
             INSERT INTO Entities (id, type, version)
-            VALUES (?, ?, 0);
+            VALUES (?, ?, ?);
             """,
             entity.id,
-            EntityType.type
+            EntityType.type,
+            version
         ).execute()
     }
 
-    func updateVersion(of entity: Entity, version: Int32) throws {
+    func updateVersion(of entity: Entity, to version: Int32) throws {
         try self.operation(
             "UPDATE Entities SET version = ? WHERE id = ?",
             version,
