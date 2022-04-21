@@ -1,15 +1,15 @@
 CREATE TABLE IF NOT EXISTS Entities (
-    "id" TEXT PRIMARY KEY,
-    "type" TEXT,
-    "version" INT
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "type" TEXT NOT NULL,
+    "version" INT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS Events (
-    "entity" TEXT REFERENCES Entities(id),
-    "name" TEXT,
-    "details" TEXT,
-    "actor" TEXT,
+    "entity" TEXT NOT NULL REFERENCES Entities(id),
+    "name" TEXT NOT NULL,
+    "details" TEXT NOT NULL,
+    "actor" TEXT NOT NULL,
     "timestamp" REAL NOT NULL DEFAULT (julianday('now', 'utc')),
-    "version" INT,
-    "position" BIGINT
+    "version" INT NOT NULL,
+    "position" BIGINT NOT NULL
 );
