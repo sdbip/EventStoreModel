@@ -28,7 +28,7 @@ final class HistoryLoadTests: XCTestCase {
 
     func test_fetchesEntityData() throws {
         let connection = try Connection(openFile: testDBFile)
-        try connection.execute("insert into Entities (id, type, version) values ('test', 'TheType', 42)")
+        try connection.execute("INSERT INTO Entities (id, type, version) VALUES ('test', 'TheType', 42)")
         try connection.close()
 
         let history = try store.history(forEntityWithId: "test")
@@ -39,9 +39,9 @@ final class HistoryLoadTests: XCTestCase {
     func test_fetchesEventData() throws {
         let connection = try Connection(openFile: testDBFile)
         try connection.execute("""
-            insert into Entities (id, type, version) values
+            INSERT INTO Entities (id, type, version) VALUES
                 ('test', 'TheType', 42);
-            insert into Events (entity, name, details, actor, timestamp, version, position) values
+            INSERT INTO Events (entity, name, details, actor, timestamp, version, position) VALUES
                 ('test', 'TheEvent', '{}', 'a_user', 0, 0, 0)
             """
         )
@@ -59,9 +59,9 @@ final class HistoryLoadTests: XCTestCase {
     func test_convertsTimestampFromJulianDay() throws {
         let connection = try Connection(openFile: testDBFile)
         try connection.execute("""
-            insert into Entities (id, type, version) values
+            INSERT INTO Entities (id, type, version) VALUES
                 ('test', 'TheType', 42);
-            insert into Events (entity, name, details, actor, timestamp, version, position) values
+            INSERT INTO Events (entity, name, details, actor, timestamp, version, position) VALUES
                 ('test', 'any', '{}', 'any', 2459683.17199667, 0, 0)
             """
         )

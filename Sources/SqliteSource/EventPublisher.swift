@@ -63,8 +63,7 @@ private extension Connection {
     }
 
     func addEntity<EntityType>(_ entity: EntityType, version: Int32) throws where EntityType: Entity {
-        try self.operation(
-            """
+        try self.operation("""
             INSERT INTO Entities (id, type, version)
             VALUES (?, ?, ?);
             """,
@@ -83,8 +82,7 @@ private extension Connection {
     }
 
     func publish(_ event: UnpublishedEvent, entityId: String, actor: String, version: Int32, position: Int64) throws {
-        try self.operation(
-            """
+        try self.operation("""
             INSERT INTO Events (entity, name, details, actor, version, position)
             VALUES (?, ?, ?, ?, ?, ?);
             """,
