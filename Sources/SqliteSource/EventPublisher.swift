@@ -25,10 +25,13 @@ public struct EventPublisher {
                     try connection.addEntity(entity, version: Int32(events.count) - 1)
             }
 
-            let currentPosition = try connection
-                .operation("SELECT MAX(position) FROM Events WHERE entity = ?", entity.id)
-                .single(read: { $0.int64(at: 0) })
-            let nextPosition = 1 + (currentPosition ?? -1)
+            let nextPosition = try connection
+                .operation("SELECT value FROM Properties WHERE name = 'next_position'")
+                .single(read: { $0.int64(at: 0) })!
+
+            try connection
+                .operation("UPDATE Properties SET value = value + 1 WHERE name = 'next_position'")
+                .execute()
 
             var nextVersion = entity.version.next
             for event in events {

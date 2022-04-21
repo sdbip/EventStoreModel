@@ -13,3 +13,11 @@ CREATE TABLE IF NOT EXISTS Events (
     "version" INT NOT NULL,
     "position" BIGINT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS Properties (
+    "name" TEXT NOT NULL,
+    "value" DATA NOT NULL
+);
+
+INSERT INTO Properties ("name", "value") SELECT 'next_position', 0
+    WHERE NOT EXISTS (SELECT 1 FROM Properties WHERE "name" = 'next_position');

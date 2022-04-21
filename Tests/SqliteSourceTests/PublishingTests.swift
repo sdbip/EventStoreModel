@@ -110,7 +110,7 @@ final class PublishingTests: XCTestCase {
         XCTAssertEqual(history?.events[2].name, "ThirdEvent")
     }
 
-    func test_updatesPosition() throws {
+    func test_updatesNextPosition() throws {
         let connection = try Connection(openFile: testDBFile)
         try connection.execute("""
             INSERT INTO Entities (id, type, version)
@@ -118,6 +118,8 @@ final class PublishingTests: XCTestCase {
 
             INSERT INTO Events (entity, name, details, actor, version, position)
             VALUES ('test', 'OldEvent', '{}', 'someone', 0, 1);
+
+            UPDATE Properties SET value = 2 WHERE name = 'next_position';
             """
         )
 
@@ -129,6 +131,11 @@ final class PublishingTests: XCTestCase {
         ]
 
         try publisher.publishChanges(entity: entity, actor: "user_x")
+
+        let nextPosition = try connection.operation(
+            "SELECT value FROM Properties WHERE name = 'next_position'"
+        ).single { $0.int64(at: 0) }
+        XCTAssertEqual(nextPosition, 3)
 
         let position = try connection.operation(
             "SELECT MAX(position) FROM Events WHERE entity = 'test'"
