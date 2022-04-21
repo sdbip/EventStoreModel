@@ -25,13 +25,8 @@ public struct EventPublisher {
                     try connection.addEntity(entity, version: Int32(events.count) - 1)
             }
 
-            let nextPosition = try connection
-                .operation("SELECT value FROM Properties WHERE name = 'next_position'")
-                .single(read: { $0.int64(at: 0) })!
-
-            try connection
-                .operation("UPDATE Properties SET value = value + 1 WHERE name = 'next_position'")
-                .execute()
+            let nextPosition = try connection.nextPosition()
+            try connection.incrementPosition()
 
             var nextVersion = entity.version.next
             for event in events {
@@ -43,6 +38,17 @@ public struct EventPublisher {
 }
 
 private extension Connection {
+    func nextPosition() throws -> Int64 {
+        try self.operation("SELECT value FROM Properties WHERE name = 'next_position'")
+            .single(read: { $0.int64(at: 0) })!
+    }
+
+    func incrementPosition() throws {
+        try self
+            .operation("UPDATE Properties SET value = value + 1 WHERE name = 'next_position'")
+            .execute()
+    }
+
     func isUnchanged(_ entity: Entity) throws -> Bool {
         let expectedVersion: Int32?
         switch entity.version {
