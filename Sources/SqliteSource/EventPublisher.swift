@@ -18,11 +18,10 @@ public struct EventPublisher {
         try connection.transaction {
             guard try connection.isUnchanged(entity) else { throw SQLiteError.message("Concurrency Error") }
 
-            switch entity.version {
-                case .version(let v):
-                    try connection.updateVersion(of: entity, to: Int32(events.count) + v)
-                default:
-                    try connection.addEntity(entity, version: Int32(events.count) - 1)
+            if case .version(let v) = entity.version {
+                try connection.updateVersion(of: entity, to: Int32(events.count) + v)
+            } else {
+                try connection.addEntity(entity, version: Int32(events.count) - 1)
             }
 
             let nextPosition = try connection.nextPosition()
