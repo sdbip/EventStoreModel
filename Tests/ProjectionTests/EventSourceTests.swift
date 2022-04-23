@@ -17,6 +17,16 @@ final class EventSourceTests: XCTestCase {
         try eventSource.projectEvents(count: 1)
     }
 
+    func testForwardsEventToReceiver() throws {
+        let receptacle = TestReceptacle(handledEvents: ["TheEvent"])
+        eventSource.add(receptacle)
+        database.nextEvent = event(named: "TheEvent")
+
+        try eventSource.projectEvents(count: 1)
+
+        XCTAssertEqual(receptacle.receivedEvent, "TheEvent")
+    }
+
     private func event(named name: String) -> Event {
         Event(
             entityId: "some_entity",
@@ -27,10 +37,16 @@ final class EventSourceTests: XCTestCase {
     }
 }
 
-struct MockDatabase: Database {
+final class MockDatabase: Database {
     var nextEvent: Event?
 }
 
 final class TestReceptacle: Receptacle {
+    var receivedEvent: String?
+
     init(handledEvents: [String]) {}
+
+    func receive(_ event: Event) {
+        receivedEvent = event.name
+    }
 }
