@@ -11,14 +11,15 @@ public final class EventSource {
     }
 
     public func projectEvents(count: Int) throws {
-        if let event = database.nextEvent {
+        let events = database.readEvents(count: count)
+        for event in events {
             receptacle?.receive(event)
         }
     }
 }
 
 public protocol Database {
-    var nextEvent: Event? { get }
+    func readEvents(count: Int) -> [Event]
 }
 
 public protocol Receptacle {

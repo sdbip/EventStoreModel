@@ -12,7 +12,7 @@ final class EventSourceTests: XCTestCase {
 
     func testSwallowsEventIfNoReceiver() throws {
         eventSource.add(TestReceptacle(handledEvents: ["NotSentEvent"]))
-        database.nextEvent = event(named: "UnhandledEvent")
+        database.nextEvents = [event(named: "UnhandledEvent")]
 
         try eventSource.projectEvents(count: 1)
     }
@@ -20,11 +20,31 @@ final class EventSourceTests: XCTestCase {
     func testForwardsEventToReceiver() throws {
         let receptacle = TestReceptacle(handledEvents: ["TheEvent"])
         eventSource.add(receptacle)
-        database.nextEvent = event(named: "TheEvent")
+        database.nextEvents = [event(named: "TheEvent")]
 
         try eventSource.projectEvents(count: 1)
 
-        XCTAssertEqual(receptacle.receivedEvent, "TheEvent")
+        XCTAssertEqual(receptacle.receivedEvents, ["TheEvent"])
+    }
+
+    func testForwardsMultipleEvents() throws {
+        let receptacle = TestReceptacle(handledEvents: ["TheEvent"])
+        eventSource.add(receptacle)
+        database.nextEvents = [event(named: "TheEvent"), event(named: "TheEvent")]
+
+        try eventSource.projectEvents(count: 2)
+
+        XCTAssertEqual(receptacle.receivedEvents, ["TheEvent", "TheEvent"])
+    }
+
+    func testForwardsOnlyAsManyEventsAsIndicated() throws {
+        let receptacle = TestReceptacle(handledEvents: ["TheEvent"])
+        eventSource.add(receptacle)
+        database.nextEvents = [event(named: "TheEvent"), event(named: "TheEvent")]
+
+        try eventSource.projectEvents(count: 1)
+
+        XCTAssertEqual(receptacle.receivedEvents, ["TheEvent"])
     }
 
     private func event(named name: String) -> Event {
@@ -38,15 +58,19 @@ final class EventSourceTests: XCTestCase {
 }
 
 final class MockDatabase: Database {
-    var nextEvent: Event?
+    var nextEvents: [Event] = []
+
+    func readEvents(count: Int) -> [Event] {
+        return Array(nextEvents.prefix(count))
+    }
 }
 
 final class TestReceptacle: Receptacle {
-    var receivedEvent: String?
+    var receivedEvents: [String] = []
 
     init(handledEvents: [String]) {}
 
     func receive(_ event: Event) {
-        receivedEvent = event.name
+        receivedEvents.append(event.name)
     }
 }
