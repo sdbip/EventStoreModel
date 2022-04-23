@@ -28,40 +28,73 @@ final class EventSourceTests: XCTestCase {
     }
 
     func testForwardsMultipleEvents() throws {
-        let receptacle = TestReceptacle(handledEvents: ["TheEvent"])
+        let receptacle = TestReceptacle(handledEvents: ["TheFirstEvent", "TheSecondEvent"])
         eventSource.add(receptacle)
-        database.nextEvents = [event(named: "TheEvent"), event(named: "TheEvent")]
+        database.nextEvents = [event(named: "TheFirstEvent"), event(named: "TheSecondEvent")]
 
         try eventSource.projectEvents(count: 2)
 
-        XCTAssertEqual(receptacle.receivedEvents, ["TheEvent", "TheEvent"])
+        XCTAssertEqual(receptacle.receivedEvents, ["TheFirstEvent", "TheSecondEvent"])
     }
 
     func testForwardsOnlyAsManyEventsAsIndicated() throws {
-        let receptacle = TestReceptacle(handledEvents: ["TheEvent"])
+        let receptacle = TestReceptacle(handledEvents: ["TheFirstEvent", "TheSecondEvent"])
         eventSource.add(receptacle)
-        database.nextEvents = [event(named: "TheEvent"), event(named: "TheEvent")]
+        database.nextEvents = [event(named: "TheFirstEvent"), event(named: "TheSecondEvent")]
 
         try eventSource.projectEvents(count: 1)
 
-        XCTAssertEqual(receptacle.receivedEvents, ["TheEvent"])
+        XCTAssertEqual(receptacle.receivedEvents, ["TheFirstEvent"])
+    }
+
+    func testReadsOnlyEventsAfterTheCurrentPosition() throws {
+        eventSource = EventSource(database: database, lastProjectedPosition: 1)
+
+        let receptacle = TestReceptacle(handledEvents: ["TheFirstEvent", "TheSecondEvent"])
+        eventSource.add(receptacle)
+        database.nextEvents = [
+            event(named: "TheFirstEvent", position: 1),
+            event(named: "TheSecondEvent", position: 2)
+        ]
+
+        try eventSource.projectEvents(count: 2)
+
+        XCTAssertEqual(receptacle.receivedEvents, ["TheSecondEvent"])
+    }
+
+    func testUpdatesPositionAdfterReadingEvents() throws {
+        let receptacle = TestReceptacle(handledEvents: ["TheFirstEvent", "TheSecondEvent"])
+        eventSource.add(receptacle)
+        database.nextEvents = [
+            event(named: "TheFirstEvent", position: 1),
+            event(named: "TheSecondEvent", position: 2)
+        ]
+
+        try eventSource.projectEvents(count: 1)
+        try eventSource.projectEvents(count: 1)
+
+        XCTAssertEqual(receptacle.receivedEvents, ["TheFirstEvent", "TheSecondEvent"])
     }
 
     private func event(named name: String) -> Event {
+        event(named: name, position: 11)
+    }
+
+    private func event(named name: String, position: Int64) -> Event {
         Event(
             entityId: "some_entity",
             name: name,
             entityType: "some_type",
             details: "{}",
-            position: 0)
+            position: position)
     }
 }
 
 final class MockDatabase: Database {
     var nextEvents: [Event] = []
 
-    func readEvents(count: Int) -> [Event] {
-        return Array(nextEvents.prefix(count))
+    func readEvents(count: Int, after position: Int64?) -> [Event] {
+        return Array(nextEvents.drop(while: {position != nil && $0.position <= position!}).prefix(count))
     }
 }
 
