@@ -13,17 +13,20 @@ public final class EventSource {
     }
 
     public func projectEvents(count: Int) throws {
-        var events = database.readEvents(count: count, after: lastProjectedPosition)
-        if events.count > 0 && events.allSatisfy({ $0.position == events[0].position }) {
-            events = database.readEvents(at: events[0].position)
-        }
-
+        let events = nextEvents(count: count)
         for event in events {
             for receptacle in receptacles.filter({ $0.handledEvents.contains(event.name) }) {
                 receptacle.receive(event)
             }
             lastProjectedPosition = event.position
         }
+    }
+
+    private func nextEvents(count: Int) -> [Event] {
+        let events = database.readEvents(count: count, after: lastProjectedPosition)
+        if events.isEmpty || !events.allSatisfy({ $0.position == events[0].position }) { return events }
+
+        return database.readEvents(at: events[0].position)
     }
 }
 
