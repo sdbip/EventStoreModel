@@ -2,3 +2,4 @@
 .build
 buildscripts/developer.env
 *.db
+.swiftpm/xcode/
