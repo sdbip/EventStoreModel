@@ -40,7 +40,7 @@ final class EventSourceTests: XCTestCase {
     func testForwardsOnlyAsManyEventsAsIndicated() throws {
         let receptacle = TestReceptacle(handledEvents: ["TheFirstEvent", "TheSecondEvent"])
         eventSource.add(receptacle)
-        database.nextEvents = [event(named: "TheFirstEvent"), event(named: "TheSecondEvent")]
+        database.nextEvents = [event(named: "TheFirstEvent", position: 0), event(named: "TheSecondEvent", position: 1)]
 
         try eventSource.projectEvents(count: 1)
 
@@ -77,7 +77,7 @@ final class EventSourceTests: XCTestCase {
     }
 
     private func event(named name: String) -> Event {
-        event(named: name, position: 11)
+        event(named: name, position: 0)
     }
 
     private func event(named name: String, position: Int64) -> Event {
