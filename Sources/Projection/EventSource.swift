@@ -15,7 +15,9 @@ public final class EventSource {
     public func projectEvents(count: Int) throws {
         let events = database.readEvents(count: count, after: lastProjectedPosition)
         for event in events {
-            receptacle?.receive(event)
+            if receptacle?.handledEvents.contains(event.name) == true {
+                receptacle?.receive(event)
+            }
             lastProjectedPosition = event.position
         }
     }
@@ -26,5 +28,6 @@ public protocol Database {
 }
 
 public protocol Receptacle {
+    var handledEvents: [String] { get }
     func receive(_ event: Event)
 }

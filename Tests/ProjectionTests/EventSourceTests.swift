@@ -11,10 +11,23 @@ final class EventSourceTests: XCTestCase {
     }
 
     func testSwallowsEventIfNoReceiver() throws {
-        eventSource.add(TestReceptacle(handledEvents: ["NotSentEvent"]))
+        let receptacle = TestReceptacle(handledEvents: ["TheEvent"])
+        eventSource.add(receptacle)
         database.nextEvents = [event(named: "UnhandledEvent")]
 
         try eventSource.projectEvents(count: 1)
+
+        XCTAssertEqual(receptacle.receivedEvents, [])
+    }
+
+    func testAllowsEmpty() throws {
+        let receptacle = TestReceptacle(handledEvents: ["TheEvent"])
+        eventSource.add(receptacle)
+        database.nextEvents = []
+
+        try eventSource.projectEvents(count: 1)
+
+        XCTAssertEqual(receptacle.receivedEvents, [])
     }
 
     func testForwardsEventToReceiver() throws {
@@ -99,9 +112,12 @@ final class MockDatabase: Database {
 }
 
 final class TestReceptacle: Receptacle {
+    let handledEvents: [String]
     var receivedEvents: [String] = []
 
-    init(handledEvents: [String]) {}
+    init(handledEvents: [String]) {
+        self.handledEvents = handledEvents
+    }
 
     func receive(_ event: Event) {
         receivedEvents.append(event.name)
