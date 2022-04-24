@@ -13,7 +13,11 @@ public final class EventSource {
     }
 
     public func projectEvents(count: Int) throws {
-        let events = database.readEvents(count: count, after: lastProjectedPosition)
+        var events = database.readEvents(count: count, after: lastProjectedPosition)
+        if events.count > 0 && events.allSatisfy({ $0.position == events[0].position }) {
+            events = database.readEvents(at: events[0].position)
+        }
+
         for event in events {
             for receptacle in receptacles.filter({ $0.handledEvents.contains(event.name) }) {
                 receptacle.receive(event)
@@ -25,6 +29,7 @@ public final class EventSource {
 
 public protocol Database {
     func readEvents(count: Int, after position: Int64?) -> [Event]
+    func readEvents(at position: Int64) -> [Event]
 }
 
 public protocol Receptacle {

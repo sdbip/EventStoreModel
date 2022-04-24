@@ -89,6 +89,19 @@ final class EventSourceTests: XCTestCase {
         XCTAssertEqual(receptacle.receivedEvents, ["TheFirstEvent", "TheSecondEvent"])
     }
 
+    func testConsumesAllEventsWithTheSamePosition() throws {
+        let receptacle = TestReceptacle(handledEvents: ["TheFirstEvent", "EventWithSamePosition"])
+        eventSource.add(receptacle)
+        database.nextEvents = [
+            event(named: "TheFirstEvent", position: 1),
+            event(named: "EventWithSamePosition", position: 1)
+        ]
+
+        try eventSource.projectEvents(count: 1)
+
+        XCTAssertEqual(receptacle.receivedEvents, ["TheFirstEvent", "EventWithSamePosition"])
+    }
+
     private func event(named name: String) -> Event {
         event(named: name, position: 0)
     }
@@ -108,6 +121,10 @@ final class MockDatabase: Database {
 
     func readEvents(count: Int, after position: Int64?) -> [Event] {
         return Array(nextEvents.drop(while: {position != nil && $0.position <= position!}).prefix(count))
+    }
+
+    func readEvents(at position: Int64) -> [Event] {
+        return Array(nextEvents.filter({ $0.position == position }))
     }
 }
 
