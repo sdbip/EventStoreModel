@@ -1,6 +1,6 @@
 public final class EventSource {
     private let database: Database
-    private var receptacle: Receptacle?
+    private var receptacles: [Receptacle] = []
     private var lastProjectedPosition: Int64?
 
     public init(database: Database, lastProjectedPosition: Int64? = nil) {
@@ -9,14 +9,14 @@ public final class EventSource {
     }
 
     public func add(_ receptacle: Receptacle) {
-        self.receptacle = receptacle
+        receptacles.append(receptacle)
     }
 
     public func projectEvents(count: Int) throws {
         let events = database.readEvents(count: count, after: lastProjectedPosition)
         for event in events {
-            if receptacle?.handledEvents.contains(event.name) == true {
-                receptacle?.receive(event)
+            for receptacle in receptacles.filter({ $0.handledEvents.contains(event.name) }) {
+                receptacle.receive(event)
             }
             lastProjectedPosition = event.position
         }
