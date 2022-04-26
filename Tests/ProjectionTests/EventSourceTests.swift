@@ -10,7 +10,7 @@ final class EventSourceTests: XCTestCase {
         eventSource = EventSource(database: database)
     }
 
-    func testSwallowsEventIfNoReceiver() throws {
+    func test_swallowsEventIfNoReceiver() throws {
         let receptacle = TestReceptacle(handledEvents: ["TheEvent"])
         eventSource.add(receptacle)
         database.nextEvents = [event(named: "UnhandledEvent")]
@@ -20,7 +20,7 @@ final class EventSourceTests: XCTestCase {
         XCTAssertEqual(receptacle.receivedEvents, [])
     }
 
-    func testAllowsEmpty() throws {
+    func test_allowsEmptyResponseFromDatabase() throws {
         let receptacle = TestReceptacle(handledEvents: ["TheEvent"])
         eventSource.add(receptacle)
         database.nextEvents = []
@@ -30,7 +30,7 @@ final class EventSourceTests: XCTestCase {
         XCTAssertEqual(receptacle.receivedEvents, [])
     }
 
-    func testForwardsEventToReceiver() throws {
+    func test_forwardsEventToReceiver() throws {
         let receptacle = TestReceptacle(handledEvents: ["TheEvent"])
         eventSource.add(receptacle)
         database.nextEvents = [event(named: "TheEvent")]
@@ -40,7 +40,7 @@ final class EventSourceTests: XCTestCase {
         XCTAssertEqual(receptacle.receivedEvents, ["TheEvent"])
     }
 
-    func testForwardsMultipleEvents() throws {
+    func test_forwardsMultipleEvents() throws {
         let receptacle = TestReceptacle(handledEvents: ["TheFirstEvent", "TheSecondEvent"])
         eventSource.add(receptacle)
         database.nextEvents = [event(named: "TheFirstEvent"), event(named: "TheSecondEvent")]
@@ -50,7 +50,7 @@ final class EventSourceTests: XCTestCase {
         XCTAssertEqual(receptacle.receivedEvents, ["TheFirstEvent", "TheSecondEvent"])
     }
 
-    func testForwardsOnlyAsManyEventsAsIndicated() throws {
+    func test_forwardsOnlyAsManyEventsAsRequested() throws {
         let receptacle = TestReceptacle(handledEvents: ["TheFirstEvent", "TheSecondEvent"])
         eventSource.add(receptacle)
         database.nextEvents = [event(named: "TheFirstEvent", position: 0), event(named: "TheSecondEvent", position: 1)]
@@ -60,7 +60,7 @@ final class EventSourceTests: XCTestCase {
         XCTAssertEqual(receptacle.receivedEvents, ["TheFirstEvent"])
     }
 
-    func testReadsOnlyEventsAfterTheCurrentPosition() throws {
+    func test_readsOnlyEventsAfterTheCurrentPosition() throws {
         eventSource = EventSource(database: database, lastProjectedPosition: 1)
 
         let receptacle = TestReceptacle(handledEvents: ["TheFirstEvent", "TheSecondEvent"])
@@ -75,7 +75,7 @@ final class EventSourceTests: XCTestCase {
         XCTAssertEqual(receptacle.receivedEvents, ["TheSecondEvent"])
     }
 
-    func testUpdatesPositionAdfterReadingEvents() throws {
+    func test_updatesPositionAdfterReadingEvents() throws {
         let receptacle = TestReceptacle(handledEvents: ["TheFirstEvent", "TheSecondEvent"])
         eventSource.add(receptacle)
         database.nextEvents = [
@@ -89,7 +89,7 @@ final class EventSourceTests: XCTestCase {
         XCTAssertEqual(receptacle.receivedEvents, ["TheFirstEvent", "TheSecondEvent"])
     }
 
-    func testConsumesAllEventsWithTheSamePosition() throws {
+    func test_consumesAllEventsWithTheSamePosition() throws {
         let receptacle = TestReceptacle(handledEvents: ["TheFirstEvent", "EventWithSamePosition"])
         eventSource.add(receptacle)
         database.nextEvents = [
