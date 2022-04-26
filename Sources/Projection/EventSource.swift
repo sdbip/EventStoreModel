@@ -23,16 +23,12 @@ public final class EventSource {
     }
 
     private func nextEvents(count: Int) throws -> [Event] {
-        let events = try database.readEvents(maxCount: count, after: lastProjectedPosition)
-        if events.isEmpty || !events.allSatisfy({ $0.position == events[0].position }) { return events }
-
-        return try database.readEvents(at: events[0].position)
+        return try database.readEvents(maxCount: count, after: lastProjectedPosition)
     }
 }
 
 public protocol Database {
     func readEvents(maxCount: Int, after position: Int64?) throws -> [Event]
-    func readEvents(at position: Int64) throws -> [Event]
 }
 
 public protocol Receptacle {

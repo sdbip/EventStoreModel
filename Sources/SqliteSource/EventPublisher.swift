@@ -24,13 +24,14 @@ public struct EventPublisher {
                 try connection.addEntity(entity, version: Int32(events.count) - 1)
             }
 
-            let nextPosition = try connection.nextPosition()
-            try connection.incrementPosition()
+            var nextPosition = try connection.nextPosition()
+            try connection.incrementPosition(nextPosition + Int64(events.count))
 
             var nextVersion = entity.version.next
             for event in events {
                 try connection.publish(event, entityId: entity.id, actor: actor, version: nextVersion, position: nextPosition)
                 nextVersion += 1
+                nextPosition += 1
             }
         }
     }
@@ -42,9 +43,9 @@ private extension Connection {
             .single(read: { $0.int64(at: 0) })!
     }
 
-    func incrementPosition() throws {
+    func incrementPosition(_ position: Int64) throws {
         try self
-            .operation("UPDATE Properties SET value = value + 1 WHERE name = 'next_position'")
+            .operation("UPDATE Properties SET value = ? WHERE name = 'next_position'", position)
             .execute()
     }
 

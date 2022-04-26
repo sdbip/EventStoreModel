@@ -135,12 +135,12 @@ final class PublishingTests: XCTestCase {
         let nextPosition = try connection.operation(
             "SELECT value FROM Properties WHERE name = 'next_position'"
         ).single { $0.int64(at: 0) }
-        XCTAssertEqual(nextPosition, 3)
+        XCTAssertEqual(nextPosition, 5)
 
         let position = try connection.operation(
             "SELECT MAX(position) FROM Events WHERE entity = 'test'"
         ).single { $0.int64(at: 0) }
-        XCTAssertEqual(position, 2)
+        XCTAssertEqual(position, 4)
     }
 }
 
