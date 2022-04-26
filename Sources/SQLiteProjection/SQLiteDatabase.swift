@@ -1,10 +1,7 @@
 import Projection
 import SQLite
 
-private let baseQuery = """
-    SELECT entity, type, name, details, position FROM Events
-        JOIN Entities ON Events.entity = Entities.id
-    """
+private typealias Clause = (position: Int64, operator: String)
 
 public final class SQLiteDatabase: Database {
     private let file: String
@@ -14,24 +11,40 @@ public final class SQLiteDatabase: Database {
     }
 
     public func readEvents(count: Int, after position: Int64?) throws -> [Event] {
-        let connection = try Connection(openFile: file)
-        let operation: Operation
-        if let position = position {
-            operation = try connection.operation(
-                "\(baseQuery) WHERE position > ?",
-                position)
-        } else {
-            operation = try connection.operation(baseQuery)
-        }
-        return try events(from: operation)
+        return try events(after(position))
     }
     
     public func readEvents(at position: Int64) throws -> [Event] {
-        let connection = try Connection(openFile: file)
-        let operation = try connection.operation(
-            "\(baseQuery) WHERE position = ?",
-            position)
+        return try events(at(position))
+    }
+
+    private func after(_ position: Int64?) -> Clause? {
+        guard let position = position else { return nil }
+        return (position: position, operator: ">")
+    }
+
+    private func at(_ position: Int64) -> Clause {
+        (position: position, operator: "=")
+    }
+
+    private func events(_ clause: Clause?) throws -> [Event] {
+        let operation = try self.operation(clause: clause)
         return try events(from: operation)
+    }
+
+    private func operation(clause: Clause? = nil) throws -> Operation {
+        let baseQuery = """
+            SELECT entity, type, name, details, position FROM Events
+                JOIN Entities ON Events.entity = Entities.id
+            """
+
+        let connection = try Connection(openFile: file)
+        if let (position, op) = clause {
+            return try connection.operation(
+                "\(baseQuery) WHERE position \(op) ?",
+                position)
+        }
+        return try connection.operation(baseQuery)
     }
     
     private func events(from operation: Operation) throws -> [Event] {
