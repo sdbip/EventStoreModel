@@ -97,7 +97,7 @@ final class SQLiteDatabaseTests: XCTestCase {
 
         XCTAssertEqual(events.map { $0.position }, [1, 2])
     }
-
+    
     func test_readEventsAfter_returnsAllEventsWhenNoPositionSpecified() throws {
         let connection = try Connection(openFile: testDbFile)
         try connection.execute("""
@@ -111,6 +111,36 @@ final class SQLiteDatabaseTests: XCTestCase {
         let events = try database.readEvents(maxCount: 3, after: nil)
 
         XCTAssertEqual(events.map { $0.position }, [0, 1, 2])
+    }
+    
+    func test_readEventsFromBeginning_returnsNoMoreThanMaxCountEvents() throws {
+        let connection = try Connection(openFile: testDbFile)
+        try connection.execute("""
+            INSERT INTO Events (entity, name, details, actor, version, position) VALUES
+                ('entity', 'name', '{}', 'actor', 0, 0),
+                ('entity', 'name', '{}', 'actor', 1, 1),
+                ('entity', 'name', '{}', 'actor', 2, 2)
+            """)
+
+        let database = SQLiteDatabase(file: testDbFile)
+        let events = try database.readEvents(maxCount: 2, after: nil)
+
+        XCTAssertEqual(events.map { $0.position }, [0, 1])
+    }
+    
+    func test_readEventsAfter_returnsNoMoreThanMaxCountEvents() throws {
+        let connection = try Connection(openFile: testDbFile)
+        try connection.execute("""
+            INSERT INTO Events (entity, name, details, actor, version, position) VALUES
+                ('entity', 'name', '{}', 'actor', 0, 0),
+                ('entity', 'name', '{}', 'actor', 1, 1),
+                ('entity', 'name', '{}', 'actor', 2, 2)
+            """)
+
+        let database = SQLiteDatabase(file: testDbFile)
+        let events = try database.readEvents(maxCount: 1, after: 0)
+
+        XCTAssertEqual(events.map { $0.position }, [1])
     }
 }
 

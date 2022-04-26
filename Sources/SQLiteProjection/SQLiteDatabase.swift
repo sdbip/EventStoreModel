@@ -11,7 +11,8 @@ public final class SQLiteDatabase: Database {
     }
 
     public func readEvents(maxCount: Int, after position: Int64?) throws -> [Event] {
-        return try events(after(position))
+        let operation = try self.operation(clause: after(position), limit: "LIMIT \(maxCount)")
+        return try events(from: operation)
     }
     
     public func readEvents(at position: Int64) throws -> [Event] {
@@ -32,7 +33,7 @@ public final class SQLiteDatabase: Database {
         return try events(from: operation)
     }
 
-    private func operation(clause: Clause? = nil) throws -> Operation {
+    private func operation(clause: Clause? = nil, limit: String? = nil) throws -> Operation {
         let baseQuery = """
             SELECT entity, type, name, details, position FROM Events
                 JOIN Entities ON Events.entity = Entities.id
@@ -41,10 +42,10 @@ public final class SQLiteDatabase: Database {
         let connection = try Connection(openFile: file)
         if let (position, op) = clause {
             return try connection.operation(
-                "\(baseQuery) WHERE position \(op) ?",
+                "\(baseQuery) WHERE position \(op) ? \(limit ?? "")",
                 position)
         }
-        return try connection.operation(baseQuery)
+        return try connection.operation("\(baseQuery) \(limit ?? "")")
     }
     
     private func events(from operation: Operation) throws -> [Event] {
