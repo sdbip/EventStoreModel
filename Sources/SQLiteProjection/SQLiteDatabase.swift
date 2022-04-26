@@ -1,7 +1,10 @@
 import Projection
 import SQLite
 
-private let baseQuery = "SELECT entity, name, details, position FROM Events"
+private let baseQuery = """
+    SELECT entity, type, name, details, position FROM Events
+        JOIN Entities ON Events.entity = Entities.id
+    """
 
 public final class SQLiteDatabase: Database {
     private let file: String
@@ -33,11 +36,18 @@ public final class SQLiteDatabase: Database {
     
     private func events(from operation: Operation) throws -> [Event] {
         return try operation.query {
-            let entityId = $0.string(at: 0)
-            let name = $0.string(at: 1)
-            let details = $0.string(at: 2)
-            let position = $0.int64(at: 3)
-            return Event(entityId: entityId!, name: name!, entityType: "type", details: details!, position: position)
+            guard let entityId = $0.string(at: 0),
+                  let type = $0.string(at: 1),
+                  let name = $0.string(at: 2),
+                  let details = $0.string(at: 3)
+            else { throw SQLiteError.unknown }
+            
+            return Event(
+                entityId: entityId,
+                name: name,
+                entityType: type,
+                details: details,
+                position: $0.int64(at: 4))
         }
     }
 }
