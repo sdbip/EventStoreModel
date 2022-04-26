@@ -35,7 +35,7 @@ final class SQLiteDatabaseTests: XCTestCase {
             """)
 
         let database = SQLiteDatabase(file: testDbFile)
-        let events = database.readEvents(at: 1)
+        let events = try database.readEvents(at: 1)
 
         XCTAssertEqual(events,
             [Event(
@@ -57,7 +57,7 @@ final class SQLiteDatabaseTests: XCTestCase {
             """)
 
         let database = SQLiteDatabase(file: testDbFile)
-        let events = database.readEvents(at: 1)
+        let events = try database.readEvents(at: 1)
 
         XCTAssert(events.allSatisfy({ $0.position == 1 }))
 
@@ -71,7 +71,7 @@ final class SQLiteDatabaseTests: XCTestCase {
             """)
 
         let database = SQLiteDatabase(file: testDbFile)
-        let events = database.readEvents(count: 1, after: 0)
+        let events = try database.readEvents(count: 1, after: 0)
 
         XCTAssertEqual(events,
             [Event(
@@ -93,7 +93,7 @@ final class SQLiteDatabaseTests: XCTestCase {
             """)
 
         let database = SQLiteDatabase(file: testDbFile)
-        let events = database.readEvents(count: 3, after: 0)
+        let events = try database.readEvents(count: 3, after: 0)
 
         XCTAssertEqual(events.map { $0.position }, [1, 2])
     }
@@ -108,7 +108,7 @@ final class SQLiteDatabaseTests: XCTestCase {
             """)
 
         let database = SQLiteDatabase(file: testDbFile)
-        let events = database.readEvents(count: 3, after: nil)
+        let events = try database.readEvents(count: 3, after: nil)
 
         XCTAssertEqual(events.map { $0.position }, [0, 1, 2])
     }

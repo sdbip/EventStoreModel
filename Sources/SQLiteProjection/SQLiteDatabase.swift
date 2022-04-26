@@ -10,35 +10,25 @@ public final class SQLiteDatabase: Database {
         self.file = file
     }
 
-    public func readEvents(count: Int, after position: Int64?) -> [Event] {
-        do {
-            let connection = try Connection(openFile: file)
-            let operation: Operation
-            if let position = position {
-                operation = try connection.operation(
-                    "\(baseQuery) WHERE position > ?",
-                    position)
-            } else {
-                operation = try connection.operation(baseQuery)
-            }
-            return try events(from: operation)
-        } catch {
-            
+    public func readEvents(count: Int, after position: Int64?) throws -> [Event] {
+        let connection = try Connection(openFile: file)
+        let operation: Operation
+        if let position = position {
+            operation = try connection.operation(
+                "\(baseQuery) WHERE position > ?",
+                position)
+        } else {
+            operation = try connection.operation(baseQuery)
         }
-        return []
+        return try events(from: operation)
     }
     
-    public func readEvents(at position: Int64) -> [Event] {
-        do {
-            let connection = try Connection(openFile: file)
-            let operation = try connection.operation(
-                "\(baseQuery) WHERE position = ?",
-                position)
-            return try events(from: operation)
-        } catch {
-            
-        }
-        return []
+    public func readEvents(at position: Int64) throws -> [Event] {
+        let connection = try Connection(openFile: file)
+        let operation = try connection.operation(
+            "\(baseQuery) WHERE position = ?",
+            position)
+        return try events(from: operation)
     }
     
     private func events(from operation: Operation) throws -> [Event] {
