@@ -14,7 +14,7 @@ final class SQLiteDatabaseTests: XCTestCase {
         } catch {
             // do nothing
         }
-        
+
         do {
             try Schema.add(to: testDbFile)
             let connection = try Connection(openFile: testDbFile)
@@ -46,7 +46,7 @@ final class SQLiteDatabaseTests: XCTestCase {
                 position: 1
             )])
     }
-    
+
     func test_readEventsAt_returnsOnlyEventsAtTheIndicatedPosition() throws {
         let connection = try Connection(openFile: testDbFile)
         try connection.execute("""
@@ -62,7 +62,7 @@ final class SQLiteDatabaseTests: XCTestCase {
         XCTAssert(events.allSatisfy({ $0.position == 1 }))
 
     }
-    
+
     func test_readEventsAfter_returnsEvents() throws {
         let connection = try Connection(openFile: testDbFile)
         try connection.execute("""
@@ -71,7 +71,7 @@ final class SQLiteDatabaseTests: XCTestCase {
             """)
 
         let database = SQLiteDatabase(file: testDbFile)
-        let events = try database.readEvents(count: 1, after: 0)
+        let events = try database.readEvents(maxCount: 1, after: 0)
 
         XCTAssertEqual(events,
             [Event(
@@ -82,7 +82,7 @@ final class SQLiteDatabaseTests: XCTestCase {
                 position: 1
             )])
     }
-    
+
     func test_readEventsAfter_returnsOnlyEventsAtLaterPositions() throws {
         let connection = try Connection(openFile: testDbFile)
         try connection.execute("""
@@ -93,11 +93,11 @@ final class SQLiteDatabaseTests: XCTestCase {
             """)
 
         let database = SQLiteDatabase(file: testDbFile)
-        let events = try database.readEvents(count: 3, after: 0)
+        let events = try database.readEvents(maxCount: 3, after: 0)
 
         XCTAssertEqual(events.map { $0.position }, [1, 2])
     }
-    
+
     func test_readEventsAfter_returnsAllEventsWhenNoPositionSpecified() throws {
         let connection = try Connection(openFile: testDbFile)
         try connection.execute("""
@@ -108,7 +108,7 @@ final class SQLiteDatabaseTests: XCTestCase {
             """)
 
         let database = SQLiteDatabase(file: testDbFile)
-        let events = try database.readEvents(count: 3, after: nil)
+        let events = try database.readEvents(maxCount: 3, after: nil)
 
         XCTAssertEqual(events.map { $0.position }, [0, 1, 2])
     }

@@ -119,8 +119,8 @@ final class EventSourceTests: XCTestCase {
 final class MockDatabase: Database {
     var nextEvents: [Event] = []
 
-    func readEvents(count: Int, after position: Int64?) -> [Event] {
-        return Array(nextEvents.drop(while: {position != nil && $0.position <= position!}).prefix(count))
+    func readEvents(maxCount: Int, after position: Int64?) -> [Event] {
+        return Array(nextEvents.drop(while: {position != nil && $0.position <= position!}).prefix(maxCount))
     }
 
     func readEvents(at position: Int64) -> [Event] {

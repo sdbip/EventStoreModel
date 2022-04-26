@@ -10,7 +10,7 @@ public final class SQLiteDatabase: Database {
         self.file = file
     }
 
-    public func readEvents(count: Int, after position: Int64?) throws -> [Event] {
+    public func readEvents(maxCount: Int, after position: Int64?) throws -> [Event] {
         return try events(after(position))
     }
     
