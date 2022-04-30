@@ -149,7 +149,7 @@ extension Event: Equatable {
         return left.entityId == right.entityId &&
         left.entityType == right.entityType &&
         left.name == right.name &&
-        left.details == right.details &&
+        left.jsonDetails == right.jsonDetails &&
         left.position == right.position
     }
 }

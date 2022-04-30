@@ -52,7 +52,7 @@ final class HistoryLoadTests: XCTestCase {
         XCTAssertEqual(history.events.count, 1)
 
         XCTAssertEqual(history.events[0].name, "TheEvent")
-        XCTAssertEqual(history.events[0].details, "{}")
+        XCTAssertEqual(history.events[0].jsonDetails, "{}")
         XCTAssertEqual(history.events[0].actor, "a_user")
     }
 

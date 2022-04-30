@@ -89,7 +89,7 @@ private extension Connection {
             """,
             entityId,
             event.name,
-            event.details,
+            event.jsonDetails,
             actor,
             version,
             position

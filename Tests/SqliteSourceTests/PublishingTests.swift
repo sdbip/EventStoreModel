@@ -36,7 +36,7 @@ final class PublishingTests: XCTestCase {
         XCTAssertEqual(history?.version, 0)
         XCTAssertEqual(history?.events.count, 1)
         XCTAssertEqual(history?.events[0].name, "AnEvent")
-        XCTAssertEqual(history?.events[0].details, "{}")
+        XCTAssertEqual(history?.events[0].jsonDetails, "{}")
         XCTAssertEqual(history?.events[0].actor, "user_x")
     }
 

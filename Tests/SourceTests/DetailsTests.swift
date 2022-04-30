@@ -7,7 +7,7 @@ final class DetailsTests: XCTestCase {
         counter.step(count: 10)
 
         XCTAssertEqual(counter.unpublishedEvents.count, 1)
-        XCTAssertEqual(counter.unpublishedEvents[0].details, #"{"count":10}"#)
+        XCTAssertEqual(counter.unpublishedEvents[0].jsonDetails, #"{"count":10}"#)
     }
 
     func test_readsDecodableDetails() throws {

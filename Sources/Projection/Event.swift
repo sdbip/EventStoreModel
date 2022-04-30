@@ -7,7 +7,7 @@ public struct Event {
     /// <summary>The name of the event, indicating in what way the entity's state has changed</summary>
     public let name: String
     /// <summary>A JSON object specifying the details of the change</summary>
-    public let details: String
+    public let jsonDetails: String
     /// <summary>The position of this event in the stream. Useful for keeping track after restarting the application</summary>
     public let position: Int64
 
@@ -15,7 +15,7 @@ public struct Event {
         self.entityId = entityId;
         self.name = name;
         self.entityType = entityType;
-        self.details = details;
+        self.jsonDetails = details;
         self.position = position;
     }
 }
