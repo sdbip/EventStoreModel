@@ -4,10 +4,10 @@ public final class EventSource {
     private var receptacles: [Receptacle] = []
     private var lastProjectedPosition: Int64?
 
-    public init(database: Database, delegate: PositionDelegate? = nil, lastProjectedPosition: Int64? = nil) {
+    public init(database: Database, delegate: PositionDelegate? = nil) {
         self.database = database
         self.delegate = delegate
-        self.lastProjectedPosition = lastProjectedPosition
+        self.lastProjectedPosition = delegate?.initialPosition
     }
 
     public func add(_ receptacle: Receptacle) {

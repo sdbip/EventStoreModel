@@ -63,7 +63,8 @@ final class EventSourceTests: XCTestCase {
     }
 
     func test_readsOnlyEventsAfterTheCurrentPosition() throws {
-        eventSource = EventSource(database: database, lastProjectedPosition: 1)
+        tracker.initialPosition = 1
+        eventSource = EventSource(database: database, delegate: tracker)
 
         let receptacle = TestReceptacle(handledEvents: ["TheFirstEvent", "TheSecondEvent"])
         eventSource.add(receptacle)
@@ -131,6 +132,7 @@ final class MockDatabase: Database {
 }
 
 final class MockTracker: PositionDelegate {
+    var initialPosition: Int64?
     var lastUpdatedPosition: Int64?
     
     func update(position: Int64) {
