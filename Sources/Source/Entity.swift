@@ -1,5 +1,5 @@
 /// An entity is a thing that we want to track over time. We track it because we are interested in
-// its state. It may be meaningful to refer to entities that “never” change (like nations or
+/// its state. It may be meaningful to refer to entities that “never” change (like nations or
 /// departments) but such entities can probably just be referred to as simple names. They do not
 /// need this protocol.
 public protocol Entity {
