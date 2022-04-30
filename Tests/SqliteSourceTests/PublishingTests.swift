@@ -25,7 +25,7 @@ final class PublishingTests: XCTestCase {
 
     func test_canPublishSingleEvent() throws {
         let entity = TestEntity(id: "test", version: .notSaved)
-        entity.unpublishedEvents = [UnpublishedEvent(name: "AnEvent", details: "{}")]
+        entity.unpublishedEvents = [UnpublishedEvent(name: "AnEvent", details: "{}")!]
 
         try publisher.publishChanges(entity: entity, actor: "user_x")
 
@@ -43,9 +43,9 @@ final class PublishingTests: XCTestCase {
     func test_canPublishMultipleEvents() throws {
         let entity = TestEntity(id: "test", version: .notSaved)
         entity.unpublishedEvents = [
-            UnpublishedEvent(name: "AnEvent", details: "{}"),
-            UnpublishedEvent(name: "AnEvent", details: "{}"),
-            UnpublishedEvent(name: "AnEvent", details: "{}")
+            UnpublishedEvent(name: "AnEvent", details: "{}")!,
+            UnpublishedEvent(name: "AnEvent", details: "{}")!,
+            UnpublishedEvent(name: "AnEvent", details: "{}")!
         ]
 
         try publisher.publishChanges(entity: entity, actor: "user_x")
@@ -64,7 +64,7 @@ final class PublishingTests: XCTestCase {
         )
 
         let entity = TestEntity(id: "test", version: .version(0))
-        entity.unpublishedEvents = [UnpublishedEvent(name: "AnEvent", details: "{}")]
+        entity.unpublishedEvents = [UnpublishedEvent(name: "AnEvent", details: "{}")!]
 
         try publisher.publishChanges(entity: entity, actor: "user_x")
 
@@ -81,7 +81,7 @@ final class PublishingTests: XCTestCase {
         )
 
         let entity = TestEntity(id: "test", version: 1)
-        entity.unpublishedEvents.append(UnpublishedEvent(name: "AnEvent", details: "{}"))
+        entity.unpublishedEvents.append(UnpublishedEvent(name: "AnEvent", details: "{}")!)
 
         XCTAssertThrowsError(try publisher.publishChanges(entity: entity, actor: "user_x"))
     }
@@ -96,9 +96,9 @@ final class PublishingTests: XCTestCase {
 
         let entity = TestEntity(id: "test", version: 1)
         entity.unpublishedEvents = [
-            UnpublishedEvent(name: "FirstEvent", details: "{}"),
-            UnpublishedEvent(name: "SecondEvent", details: "{}"),
-            UnpublishedEvent(name: "ThirdEvent", details: "{}")
+            UnpublishedEvent(name: "FirstEvent", details: "{}")!,
+            UnpublishedEvent(name: "SecondEvent", details: "{}")!,
+            UnpublishedEvent(name: "ThirdEvent", details: "{}")!
         ]
 
         try publisher.publishChanges(entity: entity, actor: "user_x")
@@ -125,9 +125,9 @@ final class PublishingTests: XCTestCase {
 
         let entity = TestEntity(id: "test", version: 1)
         entity.unpublishedEvents = [
-            UnpublishedEvent(name: "AnEvent", details: "{}"),
-            UnpublishedEvent(name: "AnEvent", details: "{}"),
-            UnpublishedEvent(name: "AnEvent", details: "{}")
+            UnpublishedEvent(name: "AnEvent", details: "{}")!,
+            UnpublishedEvent(name: "AnEvent", details: "{}")!,
+            UnpublishedEvent(name: "AnEvent", details: "{}")!
         ]
 
         try publisher.publishChanges(entity: entity, actor: "user_x")
