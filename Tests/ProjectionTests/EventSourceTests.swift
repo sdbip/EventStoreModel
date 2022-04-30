@@ -134,6 +134,10 @@ final class MockTracker: PositionDelegate {
     var initialPosition: Int64?
     var lastUpdatedPosition: Int64?
     
+    func lastProjectedPosition() throws -> Int64? {
+        return initialPosition
+    }
+
     func update(position: Int64) {
         lastUpdatedPosition = position
     }

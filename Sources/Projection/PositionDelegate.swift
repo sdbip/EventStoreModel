@@ -1,4 +1,4 @@
 public protocol PositionDelegate {
-    var initialPosition: Int64? { get }
-    func update(position: Int64)
+    func lastProjectedPosition() throws -> Int64?
+    func update(position: Int64) throws
 }

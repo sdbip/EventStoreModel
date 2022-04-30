@@ -1,3 +1,7 @@
+import Dispatch
+
+private let queue = DispatchQueue(label: "EventSource")
+
 public final class EventSource {
     private let database: Database
     private let delegate: PositionDelegate?
@@ -14,17 +18,19 @@ public final class EventSource {
     }
 
     public func projectEvents(count: Int) throws {
-        if lastProjectedPosition == nil {
-            lastProjectedPosition = delegate?.initialPosition
-        }
-
-        let events = try nextEvents(count: count)
-        for event in events {
-            for receptacle in receptacles.filter({ $0.handledEvents.contains(event.name) }) {
-                receptacle.receive(event)
+        try queue.sync {
+            if lastProjectedPosition == nil {
+                lastProjectedPosition = try delegate?.lastProjectedPosition()
             }
-            lastProjectedPosition = event.position
-            delegate?.update(position: event.position)
+
+            let events = try nextEvents(count: count)
+            for event in events {
+                for receptacle in receptacles.filter({ $0.handledEvents.contains(event.name) }) {
+                    receptacle.receive(event)
+                }
+                lastProjectedPosition = event.position
+                try delegate?.update(position: event.position)
+            }
         }
     }
 
