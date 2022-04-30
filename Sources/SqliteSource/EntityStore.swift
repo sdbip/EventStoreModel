@@ -28,7 +28,7 @@ public struct EntityStore {
             )
             return try operation.single { row in
                 guard let type = row.string(at: 1) else { throw SQLiteError.message("Entity has no type") }
-                return History(id: id, type: type, events: events, version: .version(row.int32(at: 2)))
+                return History(id: id, type: type, events: events, version: .saved(row.int32(at: 2)))
             }
         }
     }

@@ -63,7 +63,7 @@ final class PublishingTests: XCTestCase {
             """
         )
 
-        let entity = TestEntity(id: "test", version: .version(0))
+        let entity = TestEntity(id: "test", version: .saved(0))
         entity.unpublishedEvents = [UnpublishedEvent(name: "AnEvent", details: "{}")!]
 
         try publisher.publishChanges(entity: entity, actor: "user_x")

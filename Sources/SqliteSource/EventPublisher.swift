@@ -18,7 +18,7 @@ public struct EventPublisher {
         try connection.transaction {
             guard try connection.isUnchanged(entity) else { throw SQLiteError.message("Concurrency Error") }
 
-            if case .version(let v) = entity.version {
+            if case .saved(let v) = entity.version {
                 try connection.updateVersion(ofEntityWithId: entity.id, to: Int32(events.count) + v)
             } else {
                 try connection.addEntity(id: entity.id, type: EntityType.type, version: Int32(events.count) - 1)
@@ -41,10 +41,10 @@ public struct EventPublisher {
         let connection = try Connection(openFile: dbFile)
 
         try connection.transaction {
-            let currentVersion = try connection.version(ofEntityWithId: id)
+            let currentVersion = try connection.version(ofEntityWithId: id) ?? -1
 
-            if case .some(let v) = currentVersion {
-                try connection.updateVersion(ofEntityWithId: id, to: v + 1)
+            if currentVersion >= 0 {
+                try connection.updateVersion(ofEntityWithId: id, to: currentVersion + 1)
             } else {
                 try connection.addEntity(id: id, type: type, version: 0)
             }
@@ -52,7 +52,7 @@ public struct EventPublisher {
             let nextPosition = try connection.nextPosition()
             try connection.incrementPosition(nextPosition + 1)
 
-            let nextVersion = (currentVersion ?? -1) + 1
+            let nextVersion = currentVersion + 1
             try connection.publish(event, entityId: id, actor: actor, version: nextVersion, position: nextPosition)
         }
     }
@@ -80,7 +80,7 @@ private extension Connection {
         let expectedVersion: Int32?
         switch entity.version {
             case .notSaved: expectedVersion = nil
-            case .version(let v): expectedVersion = v
+            case .saved(let v): expectedVersion = v
         }
 
         let currentVersion = try self.version(ofEntityWithId: entity.id)
