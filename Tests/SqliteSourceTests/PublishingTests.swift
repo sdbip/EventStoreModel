@@ -142,6 +142,56 @@ final class PublishingTests: XCTestCase {
         ).single { $0.int64(at: 0) }
         XCTAssertEqual(position, 4)
     }
+
+    func test_canPublishSingleEvents() throws {
+        let connection = try Connection(openFile: testDBFile)
+        try connection.execute("""
+            INSERT INTO Entities (id, type, version)
+            VALUES ('test', 'TestEntity', 1);
+
+            INSERT INTO Events (entity, name, details, actor, version, position)
+            VALUES ('test', 'OldEvent', '{}', 'someone', 0, 1);
+
+            UPDATE Properties SET value = 2 WHERE name = 'next_position';
+            """
+        )
+
+        let event = UnpublishedEvent(name: "AnEvent", details: "{}")!
+
+        try publisher.publish(event, forId: "test", type: "whatever", actor: "user_x")
+
+        let nextPosition = try connection.operation(
+            "SELECT value FROM Properties WHERE name = 'next_position'"
+        ).single { $0.int64(at: 0) }
+        XCTAssertEqual(nextPosition, 3)
+
+        let position = try connection.operation(
+            "SELECT MAX(position) FROM Events WHERE entity = 'test'"
+        ).single { $0.int64(at: 0) }
+        XCTAssertEqual(position, 2)
+    }
+
+    func test_createsEntityFromSingleEvents() throws {
+        let event = UnpublishedEvent(name: "AnEvent", details: "{}")!
+
+        try publisher.publish(event, forId: "test", type: "expected", actor: "user_x")
+
+        let connection = try Connection(openFile: testDBFile)
+        let nextPosition = try connection.operation(
+            "SELECT value FROM Properties WHERE name = 'next_position'"
+        ).single { $0.int64(at: 0) }
+        XCTAssertEqual(nextPosition, 1)
+
+        let position = try connection.operation(
+            "SELECT MAX(position) FROM Events WHERE entity = 'test'"
+        ).single { $0.int64(at: 0) }
+        XCTAssertEqual(position, 0)
+
+        let type = try connection.operation(
+            "SELECT type FROM Entities WHERE id = 'test'"
+        ).single { $0.string(at: 0) }
+        XCTAssertEqual(type, "expected")
+    }
 }
 
 final class TestEntity: Entity {

@@ -19,9 +19,9 @@ public struct EventPublisher {
             guard try connection.isUnchanged(entity) else { throw SQLiteError.message("Concurrency Error") }
 
             if case .version(let v) = entity.version {
-                try connection.updateVersion(of: entity, to: Int32(events.count) + v)
+                try connection.updateVersion(ofEntityWithId: entity.id, to: Int32(events.count) + v)
             } else {
-                try connection.addEntity(entity, version: Int32(events.count) - 1)
+                try connection.addEntity(id: entity.id, type: EntityType.type, version: Int32(events.count) - 1)
             }
 
             var nextPosition = try connection.nextPosition()
@@ -35,9 +35,36 @@ public struct EventPublisher {
             }
         }
     }
+
+    public func publish(_ event: UnpublishedEvent, forId id: String, type: String, actor: String) throws {
+
+        let connection = try Connection(openFile: dbFile)
+
+        try connection.transaction {
+            let currentVersion = try connection.version(ofEntityWithId: id)
+
+            if case .some(let v) = currentVersion {
+                try connection.updateVersion(ofEntityWithId: id, to: v + 1)
+            } else {
+                try connection.addEntity(id: id, type: type, version: 0)
+            }
+
+            let nextPosition = try connection.nextPosition()
+            try connection.incrementPosition(nextPosition + 1)
+
+            let nextVersion = (currentVersion ?? -1) + 1
+            try connection.publish(event, entityId: id, actor: actor, version: nextVersion, position: nextPosition)
+        }
+    }
 }
 
 private extension Connection {
+    func version(ofEntityWithId id: String) throws -> Int32? {
+        return try self
+            .operation("SELECT version FROM Entities WHERE id = ?", id)
+            .single(read: { $0.int32(at: 0) })
+    }
+
     func nextPosition() throws -> Int64 {
         try self.operation("SELECT value FROM Properties WHERE name = 'next_position'")
             .single(read: { $0.int64(at: 0) })!
@@ -56,29 +83,26 @@ private extension Connection {
             case .version(let v): expectedVersion = v
         }
 
-        let currentVersion = try self
-            .operation("SELECT version FROM Entities WHERE id = ?", entity.id)
-            .single(read: { $0.int32(at: 0) })
-
+        let currentVersion = try self.version(ofEntityWithId: entity.id)
         return expectedVersion == currentVersion
     }
 
-    func addEntity<EntityType>(_ entity: EntityType, version: Int32) throws where EntityType: Entity {
+    func addEntity(id: String, type: String, version: Int32) throws {
         try self.operation("""
             INSERT INTO Entities (id, type, version)
             VALUES (?, ?, ?);
             """,
-            entity.id,
-            EntityType.type,
+            id,
+            type,
             version
         ).execute()
     }
 
-    func updateVersion(of entity: Entity, to version: Int32) throws {
+    func updateVersion(ofEntityWithId id: String, to version: Int32) throws {
         try self.operation(
             "UPDATE Entities SET version = ? WHERE id = ?",
             version,
-            entity.id
+            id
         ).execute()
     }
 
