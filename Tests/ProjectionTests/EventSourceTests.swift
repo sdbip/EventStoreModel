@@ -64,7 +64,6 @@ final class EventSourceTests: XCTestCase {
 
     func test_readsOnlyEventsAfterTheCurrentPosition() throws {
         tracker.initialPosition = 1
-        eventSource = EventSource(database: database, delegate: tracker)
 
         let receptacle = TestReceptacle(handledEvents: ["TheFirstEvent", "TheSecondEvent"])
         eventSource.add(receptacle)

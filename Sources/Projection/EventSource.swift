@@ -7,7 +7,6 @@ public final class EventSource {
     public init(database: Database, delegate: PositionDelegate? = nil) {
         self.database = database
         self.delegate = delegate
-        self.lastProjectedPosition = delegate?.initialPosition
     }
 
     public func add(_ receptacle: Receptacle) {
@@ -15,6 +14,10 @@ public final class EventSource {
     }
 
     public func projectEvents(count: Int) throws {
+        if lastProjectedPosition == nil {
+            lastProjectedPosition = delegate?.initialPosition
+        }
+
         let events = try nextEvents(count: count)
         for event in events {
             for receptacle in receptacles.filter({ $0.handledEvents.contains(event.name) }) {
