@@ -4,10 +4,12 @@ import Projection
 final class EventSourceTests: XCTestCase {
     var eventSource: EventSource!
     var database: MockDatabase!
+    var tracker: MockTracker!
 
     override func setUp() {
         database = MockDatabase()
-        eventSource = EventSource(database: database)
+        tracker = MockTracker()
+        eventSource = EventSource(database: database, delegate: tracker)
     }
 
     func test_swallowsEventIfNoReceiver() throws {
@@ -88,6 +90,19 @@ final class EventSourceTests: XCTestCase {
 
         XCTAssertEqual(receptacle.receivedEvents, ["TheFirstEvent", "TheSecondEvent"])
     }
+    
+    func test_notifiesTheUpdatedPosition() throws {
+        let receptacle = TestReceptacle(handledEvents: ["TheFirstEvent", "TheSecondEvent"])
+        eventSource.add(receptacle)
+        database.nextEvents = [
+            event(named: "TheFirstEvent", position: 1),
+            event(named: "TheSecondEvent", position: 2)
+        ]
+
+        try eventSource.projectEvents(count: 2)
+
+        XCTAssertEqual(tracker.lastUpdatedPosition, 2)
+    }
 
     private func event(named name: String) -> Event {
         event(named: name, position: 0)
@@ -112,6 +127,14 @@ final class MockDatabase: Database {
 
     func readEvents(at position: Int64) -> [Event] {
         return Array(nextEvents.filter({ $0.position == position }))
+    }
+}
+
+final class MockTracker: PositionDelegate {
+    var lastUpdatedPosition: Int64?
+    
+    func update(position: Int64) {
+        lastUpdatedPosition = position
     }
 }
 

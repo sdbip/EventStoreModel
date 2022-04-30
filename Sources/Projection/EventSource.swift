@@ -1,10 +1,12 @@
 public final class EventSource {
     private let database: Database
+    private let delegate: PositionDelegate?
     private var receptacles: [Receptacle] = []
     private var lastProjectedPosition: Int64?
 
-    public init(database: Database, lastProjectedPosition: Int64? = nil) {
+    public init(database: Database, delegate: PositionDelegate? = nil, lastProjectedPosition: Int64? = nil) {
         self.database = database
+        self.delegate = delegate
         self.lastProjectedPosition = lastProjectedPosition
     }
 
@@ -19,6 +21,7 @@ public final class EventSource {
                 receptacle.receive(event)
             }
             lastProjectedPosition = event.position
+            delegate?.update(position: event.position)
         }
     }
 
