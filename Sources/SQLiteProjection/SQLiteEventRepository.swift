@@ -39,13 +39,13 @@ public final class SQLiteEventRepository: EventRepository {
                 JOIN Entities ON Events.entity = Entities.id
             """
 
-        let connection = try Database(openFile: file)
+        let database = try Database(openFile: file)
         if let (position, op) = clause {
-            return try connection.operation(
+            return try database.operation(
                 "\(baseQuery) WHERE position \(op) ? \(limit ?? "")",
                 position)
         }
-        return try connection.operation("\(baseQuery) \(limit ?? "")")
+        return try database.operation("\(baseQuery) \(limit ?? "")")
     }
     
     private func events(from operation: Operation) throws -> [Event] {

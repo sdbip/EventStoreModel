@@ -6,20 +6,20 @@ import SQLiteProjection
 import SQLiteSource
 import SQLite
 
-private let testDbFile = "test.db"
+private let testDBFile = "test.db"
 
 final class SQLiteEventRepositoryTests: XCTestCase {
     var repository: SQLiteEventRepository!
     var database: Database!
 
     override func setUp() {
-        _ = try? FileManager.default.removeItem(atPath: testDbFile)
+        _ = try? FileManager.default.removeItem(atPath: testDBFile)
 
         do {
-            repository = SQLiteEventRepository(file: testDbFile)
-            database = try Database(openFile: testDbFile)
+            repository = SQLiteEventRepository(file: testDBFile)
+            database = try Database(openFile: testDBFile)
 
-            try Schema.add(to: testDbFile)
+            try Schema.add(to: testDBFile)
             try database.execute("""
                 INSERT INTO Entities (id, type, version)
                     VALUES ('entity', 'type', 0);
@@ -31,7 +31,7 @@ final class SQLiteEventRepositoryTests: XCTestCase {
 
     override func tearDown() {
         _ = try? database.close()
-        _ = try? FileManager.default.removeItem(atPath: testDbFile)
+        _ = try? FileManager.default.removeItem(atPath: testDBFile)
     }
 
     func test_readEventsAt_returnsEvents() throws {

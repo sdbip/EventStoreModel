@@ -58,8 +58,8 @@ final class PublishingTests: XCTestCase {
     }
 
     func test_canPublishToExistingEntity() throws {
-        let connection = try Database(openFile: testDBFile)
-        try connection.execute("""
+        let database = try Database(openFile: testDBFile)
+        try database.execute("""
             INSERT INTO Entities (id, type, version)
             VALUES ('test', 'TestEntity', 0);
             """
@@ -75,8 +75,8 @@ final class PublishingTests: XCTestCase {
     }
 
     func test_throwsIfVersionHasChanged() throws {
-        let connection = try Database(openFile: testDBFile)
-        try connection.execute("""
+        let database = try Database(openFile: testDBFile)
+        try database.execute("""
             INSERT INTO Entities (id, type, version)
             VALUES ('test', 'TestEntity', 2);
             """
@@ -89,8 +89,8 @@ final class PublishingTests: XCTestCase {
     }
 
     func test_updatesVersion() throws {
-        let connection = try Database(openFile: testDBFile)
-        try connection.execute("""
+        let database = try Database(openFile: testDBFile)
+        try database.execute("""
             INSERT INTO Entities (id, type, version)
             VALUES ('test', 'TestEntity', 1);
             """
@@ -113,8 +113,8 @@ final class PublishingTests: XCTestCase {
     }
 
     func test_updatesNextPosition() throws {
-        let connection = try Database(openFile: testDBFile)
-        try connection.execute("""
+        let database = try Database(openFile: testDBFile)
+        try database.execute("""
             INSERT INTO Entities (id, type, version)
             VALUES ('test', 'TestEntity', 1);
 
@@ -134,20 +134,20 @@ final class PublishingTests: XCTestCase {
 
         try publisher.publishChanges(entity: entity, actor: "user_x")
 
-        let nextPosition = try connection.operation(
+        let nextPosition = try database.operation(
             "SELECT value FROM Properties WHERE name = 'next_position'"
         ).single { $0.int64(at: 0) }
         XCTAssertEqual(nextPosition, 5)
 
-        let position = try connection.operation(
+        let position = try database.operation(
             "SELECT MAX(position) FROM Events WHERE entity = 'test'"
         ).single { $0.int64(at: 0) }
         XCTAssertEqual(position, 4)
     }
 
     func test_canPublishSingleEvents() throws {
-        let connection = try Database(openFile: testDBFile)
-        try connection.execute("""
+        let database = try Database(openFile: testDBFile)
+        try database.execute("""
             INSERT INTO Entities (id, type, version)
             VALUES ('test', 'TestEntity', 1);
 
@@ -162,12 +162,12 @@ final class PublishingTests: XCTestCase {
 
         try publisher.publish(event, forId: "test", type: "whatever", actor: "user_x")
 
-        let nextPosition = try connection.operation(
+        let nextPosition = try database.operation(
             "SELECT value FROM Properties WHERE name = 'next_position'"
         ).single { $0.int64(at: 0) }
         XCTAssertEqual(nextPosition, 3)
 
-        let position = try connection.operation(
+        let position = try database.operation(
             "SELECT MAX(position) FROM Events WHERE entity = 'test'"
         ).single { $0.int64(at: 0) }
         XCTAssertEqual(position, 2)
@@ -178,18 +178,18 @@ final class PublishingTests: XCTestCase {
 
         try publisher.publish(event, forId: "test", type: "expected", actor: "user_x")
 
-        let connection = try Database(openFile: testDBFile)
-        let nextPosition = try connection.operation(
+        let database = try Database(openFile: testDBFile)
+        let nextPosition = try database.operation(
             "SELECT value FROM Properties WHERE name = 'next_position'"
         ).single { $0.int64(at: 0) }
         XCTAssertEqual(nextPosition, 1)
 
-        let position = try connection.operation(
+        let position = try database.operation(
             "SELECT MAX(position) FROM Events WHERE entity = 'test'"
         ).single { $0.int64(at: 0) }
         XCTAssertEqual(position, 0)
 
-        let type = try connection.operation(
+        let type = try database.operation(
             "SELECT type FROM Entities WHERE id = 'test'"
         ).single { $0.string(at: 0) }
         XCTAssertEqual(type, "expected")

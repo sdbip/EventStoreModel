@@ -17,12 +17,12 @@ public struct EntityStore {
     }
 
     public func history(forEntityWithId id: String) throws -> History? {
-        let connection = try Database(openFile: dbFile)
+        let database = try Database(openFile: dbFile)
 
-        return try connection.transaction {
-            let events = try connection.allEvents(forEntityWithId: id)
+        return try database.transaction {
+            let events = try database.allEvents(forEntityWithId: id)
 
-            let operation = try connection.operation(
+            let operation = try database.operation(
                 "SELECT * FROM Entities WHERE id = ?1 ORDER BY version",
                 id
             )

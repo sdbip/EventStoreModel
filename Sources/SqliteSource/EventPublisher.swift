@@ -11,25 +11,25 @@ public struct EventPublisher {
     }
 
     public func publishChanges<EntityType>(entity: EntityType, actor: String) throws where EntityType: Entity {
-        let connection = try Database(openFile: dbFile)
+        let database = try Database(openFile: dbFile)
 
         let events = entity.unpublishedEvents
 
-        try connection.transaction {
-            guard try connection.isUnchanged(entity) else { throw SQLiteError.message("Concurrency Error") }
+        try database.transaction {
+            guard try database.isUnchanged(entity) else { throw SQLiteError.message("Concurrency Error") }
 
             if case .saved(let v) = entity.version {
-                try connection.updateVersion(ofEntityWithId: entity.id, to: Int32(events.count) + v)
+                try database.updateVersion(ofEntityWithId: entity.id, to: Int32(events.count) + v)
             } else {
-                try connection.addEntity(id: entity.id, type: EntityType.type, version: Int32(events.count) - 1)
+                try database.addEntity(id: entity.id, type: EntityType.type, version: Int32(events.count) - 1)
             }
 
-            var nextPosition = try connection.nextPosition()
-            try connection.incrementPosition(nextPosition + Int64(events.count))
+            var nextPosition = try database.nextPosition()
+            try database.incrementPosition(nextPosition + Int64(events.count))
 
             var nextVersion = entity.version.next
             for event in events {
-                try connection.publish(event, entityId: entity.id, actor: actor, version: nextVersion, position: nextPosition)
+                try database.publish(event, entityId: entity.id, actor: actor, version: nextVersion, position: nextPosition)
                 nextVersion += 1
                 nextPosition += 1
             }
@@ -38,22 +38,22 @@ public struct EventPublisher {
 
     public func publish(_ event: UnpublishedEvent, forId id: String, type: String, actor: String) throws {
 
-        let connection = try Database(openFile: dbFile)
+        let database = try Database(openFile: dbFile)
 
-        try connection.transaction {
-            let currentVersion = try connection.version(ofEntityWithId: id) ?? -1
+        try database.transaction {
+            let currentVersion = try database.version(ofEntityWithId: id) ?? -1
 
             if currentVersion >= 0 {
-                try connection.updateVersion(ofEntityWithId: id, to: currentVersion + 1)
+                try database.updateVersion(ofEntityWithId: id, to: currentVersion + 1)
             } else {
-                try connection.addEntity(id: id, type: type, version: 0)
+                try database.addEntity(id: id, type: type, version: 0)
             }
 
-            let nextPosition = try connection.nextPosition()
-            try connection.incrementPosition(nextPosition + 1)
+            let nextPosition = try database.nextPosition()
+            try database.incrementPosition(nextPosition + 1)
 
             let nextVersion = currentVersion + 1
-            try connection.publish(event, entityId: id, actor: actor, version: nextVersion, position: nextPosition)
+            try database.publish(event, entityId: id, actor: actor, version: nextVersion, position: nextPosition)
         }
     }
 }
