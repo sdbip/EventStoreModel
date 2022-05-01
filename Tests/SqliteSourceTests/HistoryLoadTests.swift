@@ -5,15 +5,19 @@ import Source
 import SQLite
 import SQLiteSource
 
-let testDBFile = "test.db"
+private let testDBFile = "test.db"
 
 final class HistoryLoadTests: XCTestCase {
     var store: EntityStore!
+    var database: Database!
 
     override func setUp() {
-        store = EntityStore(dbFile: testDBFile)
+        _ = try? FileManager.default.removeItem(atPath: testDBFile)
 
         do {
+            store = EntityStore(dbFile: testDBFile)
+            database = try Database(openFile: testDBFile)
+
             try Schema.add(to: testDBFile)
         } catch {
             XCTFail("\(error)")
@@ -21,15 +25,12 @@ final class HistoryLoadTests: XCTestCase {
     }
 
     override func tearDown() {
-        do {
-            try FileManager.default.removeItem(atPath: testDBFile)
-        } catch { }
+        _ = try? database.close()
+        _ = try? FileManager.default.removeItem(atPath: testDBFile)
     }
 
     func test_fetchesEntityData() throws {
-        let connection = try Database(openFile: testDBFile)
-        try connection.execute("INSERT INTO Entities (id, type, version) VALUES ('test', 'TheType', 42)")
-        try connection.close()
+        try database.execute("INSERT INTO Entities (id, type, version) VALUES ('test', 'TheType', 42)")
 
         let history = try store.history(forEntityWithId: "test")
         XCTAssertEqual(history?.type, "TheType")
@@ -37,15 +38,13 @@ final class HistoryLoadTests: XCTestCase {
     }
 
     func test_fetchesEventData() throws {
-        let connection = try Database(openFile: testDBFile)
-        try connection.execute("""
+        try database.execute("""
             INSERT INTO Entities (id, type, version) VALUES
                 ('test', 'TheType', 42);
             INSERT INTO Events (entity, name, details, actor, timestamp, version, position) VALUES
                 ('test', 'TheEvent', '{}', 'a_user', 0, 0, 0)
             """
         )
-        try connection.close()
 
         guard let history = try store.history(forEntityWithId: "test") else { return XCTFail("No history returned") }
 
@@ -57,15 +56,13 @@ final class HistoryLoadTests: XCTestCase {
     }
 
     func test_convertsTimestampFromJulianDay() throws {
-        let connection = try Database(openFile: testDBFile)
-        try connection.execute("""
+        try database.execute("""
             INSERT INTO Entities (id, type, version) VALUES
                 ('test', 'TheType', 42);
             INSERT INTO Events (entity, name, details, actor, timestamp, version, position) VALUES
                 ('test', 'any', '{}', 'any', 2459683.17199667, 0, 0)
             """
         )
-        try connection.close()
 
         guard let history = try store.history(forEntityWithId: "test") else { return XCTFail("No history returned") }
         guard let event = history.events.first else { return XCTFail("No event returned")}

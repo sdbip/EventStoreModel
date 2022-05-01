@@ -4,10 +4,14 @@ import Source
 import SQLite
 import SQLiteSource
 
+private let testDBFile = "test.db"
+
 final class PublishingTests: XCTestCase {
     var publisher: EventPublisher!
 
     override func setUp() {
+        _ = try? FileManager.default.removeItem(atPath: testDBFile)
+
         publisher = EventPublisher(dbFile: testDBFile)
 
         do {
@@ -18,9 +22,7 @@ final class PublishingTests: XCTestCase {
     }
 
     override func tearDown() {
-        do {
-            try FileManager.default.removeItem(atPath: testDBFile)
-        } catch { }
+        _ = try? FileManager.default.removeItem(atPath: testDBFile)
     }
 
     func test_canPublishSingleEvent() throws {
