@@ -39,7 +39,7 @@ public final class SQLiteEventRepository: EventRepository {
                 JOIN Entities ON Events.entity = Entities.id
             """
 
-        let connection = try Connection(openFile: file)
+        let connection = try Database(openFile: file)
         if let (position, op) = clause {
             return try connection.operation(
                 "\(baseQuery) WHERE position \(op) ? \(limit ?? "")",

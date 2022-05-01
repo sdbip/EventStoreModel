@@ -17,7 +17,7 @@ public struct EntityStore {
     }
 
     public func history(forEntityWithId id: String) throws -> History? {
-        let connection = try Connection(openFile: dbFile)
+        let connection = try Database(openFile: dbFile)
 
         return try connection.transaction {
             let events = try connection.allEvents(forEntityWithId: id)
@@ -34,7 +34,7 @@ public struct EntityStore {
     }
 }
 
-private extension Connection {
+private extension Database {
     func allEvents(forEntityWithId entityId: String) throws -> [PublishedEvent] {
         return try self.operation("SELECT * FROM Events WHERE entity = ?", entityId)
             .query { row -> PublishedEvent in

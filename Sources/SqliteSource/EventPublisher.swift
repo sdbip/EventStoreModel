@@ -11,7 +11,7 @@ public struct EventPublisher {
     }
 
     public func publishChanges<EntityType>(entity: EntityType, actor: String) throws where EntityType: Entity {
-        let connection = try Connection(openFile: dbFile)
+        let connection = try Database(openFile: dbFile)
 
         let events = entity.unpublishedEvents
 
@@ -38,7 +38,7 @@ public struct EventPublisher {
 
     public func publish(_ event: UnpublishedEvent, forId id: String, type: String, actor: String) throws {
 
-        let connection = try Connection(openFile: dbFile)
+        let connection = try Database(openFile: dbFile)
 
         try connection.transaction {
             let currentVersion = try connection.version(ofEntityWithId: id) ?? -1
@@ -58,7 +58,7 @@ public struct EventPublisher {
     }
 }
 
-private extension Connection {
+private extension Database {
     func version(ofEntityWithId id: String) throws -> Int32? {
         return try self
             .operation("SELECT version FROM Entities WHERE id = ?", id)

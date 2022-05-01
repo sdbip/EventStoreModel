@@ -19,7 +19,7 @@ final class SQLiteEventRepositoryTests: XCTestCase {
 
         do {
             try Schema.add(to: testDbFile)
-            let connection = try Connection(openFile: testDbFile)
+            let connection = try Database(openFile: testDbFile)
             try connection.execute("""
                 INSERT INTO Entities (id, type, version)
                     VALUES ('entity', 'type', 0);
@@ -32,7 +32,7 @@ final class SQLiteEventRepositoryTests: XCTestCase {
     }
 
     func test_readEventsAt_returnsEvents() throws {
-        let connection = try Connection(openFile: testDbFile)
+        let connection = try Database(openFile: testDbFile)
         try connection.execute("""
             INSERT INTO Events (entity, name, details, actor, version, position)
                 VALUES ('entity', 'name', '{}', 'actor', 1, 1)
@@ -51,7 +51,7 @@ final class SQLiteEventRepositoryTests: XCTestCase {
     }
 
     func test_readEventsAt_returnsOnlyEventsAtTheIndicatedPosition() throws {
-        let connection = try Connection(openFile: testDbFile)
+        let connection = try Database(openFile: testDbFile)
         try connection.execute("""
             INSERT INTO Events (entity, name, details, actor, version, position) VALUES
                 ('entity', 'name', '{}', 'actor', 0, 0),
@@ -66,7 +66,7 @@ final class SQLiteEventRepositoryTests: XCTestCase {
     }
 
     func test_readEventsAfter_returnsEvents() throws {
-        let connection = try Connection(openFile: testDbFile)
+        let connection = try Database(openFile: testDbFile)
         try connection.execute("""
             INSERT INTO Events (entity, name, details, actor, version, position)
                 VALUES ('entity', 'name', '{}', 'actor', 1, 1)
@@ -85,7 +85,7 @@ final class SQLiteEventRepositoryTests: XCTestCase {
     }
 
     func test_readEventsAfter_returnsOnlyEventsAtLaterPositions() throws {
-        let connection = try Connection(openFile: testDbFile)
+        let connection = try Database(openFile: testDbFile)
         try connection.execute("""
             INSERT INTO Events (entity, name, details, actor, version, position) VALUES
                 ('entity', 'name', '{}', 'actor', 0, 0),
@@ -99,7 +99,7 @@ final class SQLiteEventRepositoryTests: XCTestCase {
     }
     
     func test_readEventsAfter_returnsAllEventsWhenNoPositionSpecified() throws {
-        let connection = try Connection(openFile: testDbFile)
+        let connection = try Database(openFile: testDbFile)
         try connection.execute("""
             INSERT INTO Events (entity, name, details, actor, version, position) VALUES
                 ('entity', 'name', '{}', 'actor', 0, 0),
@@ -113,7 +113,7 @@ final class SQLiteEventRepositoryTests: XCTestCase {
     }
     
     func test_readEventsFromBeginning_returnsNoMoreThanMaxCountEvents() throws {
-        let connection = try Connection(openFile: testDbFile)
+        let connection = try Database(openFile: testDbFile)
         try connection.execute("""
             INSERT INTO Events (entity, name, details, actor, version, position) VALUES
                 ('entity', 'name', '{}', 'actor', 0, 0),
@@ -127,7 +127,7 @@ final class SQLiteEventRepositoryTests: XCTestCase {
     }
     
     func test_readEventsAfter_returnsNoMoreThanMaxCountEvents() throws {
-        let connection = try Connection(openFile: testDbFile)
+        let connection = try Database(openFile: testDbFile)
         try connection.execute("""
             INSERT INTO Events (entity, name, details, actor, version, position) VALUES
                 ('entity', 'name', '{}', 'actor', 0, 0),

@@ -5,7 +5,7 @@ public enum Schema {
     public static func add(to dbFile: String) throws {
         guard let schema = try bundledSchema() else { fatalError() }
 
-        let connection = try Connection(openFile: dbFile)
+        let connection = try Database(openFile: dbFile)
         try connection.execute(schema)
         try connection.close()
     }

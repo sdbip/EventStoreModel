@@ -56,7 +56,7 @@ final class PublishingTests: XCTestCase {
     }
 
     func test_canPublishToExistingEntity() throws {
-        let connection = try Connection(openFile: testDBFile)
+        let connection = try Database(openFile: testDBFile)
         try connection.execute("""
             INSERT INTO Entities (id, type, version)
             VALUES ('test', 'TestEntity', 0);
@@ -73,7 +73,7 @@ final class PublishingTests: XCTestCase {
     }
 
     func test_throwsIfVersionHasChanged() throws {
-        let connection = try Connection(openFile: testDBFile)
+        let connection = try Database(openFile: testDBFile)
         try connection.execute("""
             INSERT INTO Entities (id, type, version)
             VALUES ('test', 'TestEntity', 2);
@@ -87,7 +87,7 @@ final class PublishingTests: XCTestCase {
     }
 
     func test_updatesVersion() throws {
-        let connection = try Connection(openFile: testDBFile)
+        let connection = try Database(openFile: testDBFile)
         try connection.execute("""
             INSERT INTO Entities (id, type, version)
             VALUES ('test', 'TestEntity', 1);
@@ -111,7 +111,7 @@ final class PublishingTests: XCTestCase {
     }
 
     func test_updatesNextPosition() throws {
-        let connection = try Connection(openFile: testDBFile)
+        let connection = try Database(openFile: testDBFile)
         try connection.execute("""
             INSERT INTO Entities (id, type, version)
             VALUES ('test', 'TestEntity', 1);
@@ -144,7 +144,7 @@ final class PublishingTests: XCTestCase {
     }
 
     func test_canPublishSingleEvents() throws {
-        let connection = try Connection(openFile: testDBFile)
+        let connection = try Database(openFile: testDBFile)
         try connection.execute("""
             INSERT INTO Entities (id, type, version)
             VALUES ('test', 'TestEntity', 1);
@@ -176,7 +176,7 @@ final class PublishingTests: XCTestCase {
 
         try publisher.publish(event, forId: "test", type: "expected", actor: "user_x")
 
-        let connection = try Connection(openFile: testDBFile)
+        let connection = try Database(openFile: testDBFile)
         let nextPosition = try connection.operation(
             "SELECT value FROM Properties WHERE name = 'next_position'"
         ).single { $0.int64(at: 0) }
