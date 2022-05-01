@@ -3,7 +3,7 @@ import SQLite
 
 private typealias Clause = (position: Int64, operator: String)
 
-public final class SQLiteDatabase: Database {
+public final class SQLiteEventRepository: EventRepository {
     private let file: String
 
     public init(file: String) {

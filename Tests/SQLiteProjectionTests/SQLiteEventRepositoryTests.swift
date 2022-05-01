@@ -7,7 +7,9 @@ import SQLite
 
 private let testDbFile = "test.db"
 
-final class SQLiteDatabaseTests: XCTestCase {
+final class SQLiteEventRepositoryTests: XCTestCase {
+    var repository: SQLiteEventRepository!
+
     override func setUp() {
         do {
             try FileManager.default.removeItem(atPath: testDbFile)
@@ -25,6 +27,8 @@ final class SQLiteDatabaseTests: XCTestCase {
         } catch {
             // ignore
         }
+
+        repository = SQLiteEventRepository(file: testDbFile)
     }
 
     func test_readEventsAt_returnsEvents() throws {
@@ -34,8 +38,7 @@ final class SQLiteDatabaseTests: XCTestCase {
                 VALUES ('entity', 'name', '{}', 'actor', 1, 1)
             """)
 
-        let database = SQLiteDatabase(file: testDbFile)
-        let events = try database.readEvents(at: 1)
+        let events = try repository.readEvents(at: 1)
 
         XCTAssertEqual(events,
             [Event(
@@ -56,8 +59,7 @@ final class SQLiteDatabaseTests: XCTestCase {
                 ('entity', 'name', '{}', 'actor', 2, 2)
             """)
 
-        let database = SQLiteDatabase(file: testDbFile)
-        let events = try database.readEvents(at: 1)
+        let events = try repository.readEvents(at: 1)
 
         XCTAssert(events.allSatisfy({ $0.position == 1 }))
 
@@ -70,8 +72,7 @@ final class SQLiteDatabaseTests: XCTestCase {
                 VALUES ('entity', 'name', '{}', 'actor', 1, 1)
             """)
 
-        let database = SQLiteDatabase(file: testDbFile)
-        let events = try database.readEvents(maxCount: 1, after: 0)
+        let events = try repository.readEvents(maxCount: 1, after: 0)
 
         XCTAssertEqual(events,
             [Event(
@@ -92,8 +93,7 @@ final class SQLiteDatabaseTests: XCTestCase {
                 ('entity', 'name', '{}', 'actor', 2, 2)
             """)
 
-        let database = SQLiteDatabase(file: testDbFile)
-        let events = try database.readEvents(maxCount: 3, after: 0)
+        let events = try repository.readEvents(maxCount: 3, after: 0)
 
         XCTAssertEqual(events.map { $0.position }, [1, 2])
     }
@@ -107,8 +107,7 @@ final class SQLiteDatabaseTests: XCTestCase {
                 ('entity', 'name', '{}', 'actor', 2, 2)
             """)
 
-        let database = SQLiteDatabase(file: testDbFile)
-        let events = try database.readEvents(maxCount: 3, after: nil)
+        let events = try repository.readEvents(maxCount: 3, after: nil)
 
         XCTAssertEqual(events.map { $0.position }, [0, 1, 2])
     }
@@ -122,8 +121,7 @@ final class SQLiteDatabaseTests: XCTestCase {
                 ('entity', 'name', '{}', 'actor', 2, 2)
             """)
 
-        let database = SQLiteDatabase(file: testDbFile)
-        let events = try database.readEvents(maxCount: 2, after: nil)
+        let events = try repository.readEvents(maxCount: 2, after: nil)
 
         XCTAssertEqual(events.map { $0.position }, [0, 1])
     }
@@ -137,8 +135,7 @@ final class SQLiteDatabaseTests: XCTestCase {
                 ('entity', 'name', '{}', 'actor', 2, 2)
             """)
 
-        let database = SQLiteDatabase(file: testDbFile)
-        let events = try database.readEvents(maxCount: 1, after: 0)
+        let events = try repository.readEvents(maxCount: 1, after: 0)
 
         XCTAssertEqual(events.map { $0.position }, [1])
     }

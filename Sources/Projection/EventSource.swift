@@ -3,13 +3,13 @@ import Dispatch
 private let queue = DispatchQueue(label: "EventSource")
 
 public final class EventSource {
-    private let database: Database
+    private let repository: EventRepository
     private let delegate: PositionDelegate?
     private var receptacles: [Receptacle] = []
     private var lastProjectedPosition: Int64?
 
-    public init(database: Database, delegate: PositionDelegate? = nil) {
-        self.database = database
+    public init(repository: EventRepository, delegate: PositionDelegate? = nil) {
+        self.repository = repository
         self.delegate = delegate
     }
 
@@ -35,11 +35,11 @@ public final class EventSource {
     }
 
     private func nextEvents(count: Int) throws -> [Event] {
-        return try database.readEvents(maxCount: count, after: lastProjectedPosition)
+        return try repository.readEvents(maxCount: count, after: lastProjectedPosition)
     }
 }
 
-public protocol Database {
+public protocol EventRepository {
     func readEvents(maxCount: Int, after position: Int64?) throws -> [Event]
 }
 

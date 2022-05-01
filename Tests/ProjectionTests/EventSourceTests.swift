@@ -3,29 +3,29 @@ import Projection
 
 final class EventSourceTests: XCTestCase {
     var eventSource: EventSource!
-    var database: MockDatabase!
-    var tracker: MockTracker!
+    var repository: TransientEventRepository!
+    var delegate: MockPositionDelegate!
 
     override func setUp() {
-        database = MockDatabase()
-        tracker = MockTracker()
-        eventSource = EventSource(database: database, delegate: tracker)
+        repository = TransientEventRepository()
+        delegate = MockPositionDelegate()
+        eventSource = EventSource(repository: repository, delegate: delegate)
     }
 
     func test_swallowsEventIfNoReceiver() throws {
         let receptacle = TestReceptacle(handledEvents: ["TheEvent"])
         eventSource.add(receptacle)
-        database.nextEvents = [event(named: "UnhandledEvent")]
+        repository.nextEvents = [event(named: "UnhandledEvent")]
 
         try eventSource.projectEvents(count: 1)
 
         XCTAssertEqual(receptacle.receivedEvents, [])
     }
 
-    func test_allowsEmptyResponseFromDatabase() throws {
+    func test_allowsEmptyResponseFromRepository() throws {
         let receptacle = TestReceptacle(handledEvents: ["TheEvent"])
         eventSource.add(receptacle)
-        database.nextEvents = []
+        repository.nextEvents = []
 
         try eventSource.projectEvents(count: 1)
 
@@ -35,7 +35,7 @@ final class EventSourceTests: XCTestCase {
     func test_forwardsEventToReceiver() throws {
         let receptacle = TestReceptacle(handledEvents: ["TheEvent"])
         eventSource.add(receptacle)
-        database.nextEvents = [event(named: "TheEvent")]
+        repository.nextEvents = [event(named: "TheEvent")]
 
         try eventSource.projectEvents(count: 1)
 
@@ -45,7 +45,7 @@ final class EventSourceTests: XCTestCase {
     func test_forwardsMultipleEvents() throws {
         let receptacle = TestReceptacle(handledEvents: ["TheFirstEvent", "TheSecondEvent"])
         eventSource.add(receptacle)
-        database.nextEvents = [event(named: "TheFirstEvent"), event(named: "TheSecondEvent")]
+        repository.nextEvents = [event(named: "TheFirstEvent"), event(named: "TheSecondEvent")]
 
         try eventSource.projectEvents(count: 2)
 
@@ -55,7 +55,7 @@ final class EventSourceTests: XCTestCase {
     func test_forwardsOnlyAsManyEventsAsRequested() throws {
         let receptacle = TestReceptacle(handledEvents: ["TheFirstEvent", "TheSecondEvent"])
         eventSource.add(receptacle)
-        database.nextEvents = [event(named: "TheFirstEvent", position: 0), event(named: "TheSecondEvent", position: 1)]
+        repository.nextEvents = [event(named: "TheFirstEvent", position: 0), event(named: "TheSecondEvent", position: 1)]
 
         try eventSource.projectEvents(count: 1)
 
@@ -63,11 +63,11 @@ final class EventSourceTests: XCTestCase {
     }
 
     func test_readsOnlyEventsAfterTheCurrentPosition() throws {
-        tracker.initialPosition = 1
+        delegate.initialPosition = 1
 
         let receptacle = TestReceptacle(handledEvents: ["TheFirstEvent", "TheSecondEvent"])
         eventSource.add(receptacle)
-        database.nextEvents = [
+        repository.nextEvents = [
             event(named: "TheFirstEvent", position: 1),
             event(named: "TheSecondEvent", position: 2)
         ]
@@ -80,7 +80,7 @@ final class EventSourceTests: XCTestCase {
     func test_updatesPositionAfterReadingEvents() throws {
         let receptacle = TestReceptacle(handledEvents: ["TheFirstEvent", "TheSecondEvent"])
         eventSource.add(receptacle)
-        database.nextEvents = [
+        repository.nextEvents = [
             event(named: "TheFirstEvent", position: 1),
             event(named: "TheSecondEvent", position: 2)
         ]
@@ -94,14 +94,14 @@ final class EventSourceTests: XCTestCase {
     func test_notifiesTheUpdatedPosition() throws {
         let receptacle = TestReceptacle(handledEvents: ["TheFirstEvent", "TheSecondEvent"])
         eventSource.add(receptacle)
-        database.nextEvents = [
+        repository.nextEvents = [
             event(named: "TheFirstEvent", position: 1),
             event(named: "TheSecondEvent", position: 2)
         ]
 
         try eventSource.projectEvents(count: 2)
 
-        XCTAssertEqual(tracker.lastUpdatedPosition, 2)
+        XCTAssertEqual(delegate.lastUpdatedPosition, 2)
     }
 
     private func event(named name: String) -> Event {
@@ -118,7 +118,7 @@ final class EventSourceTests: XCTestCase {
     }
 }
 
-final class MockDatabase: Database {
+final class TransientEventRepository: EventRepository {
     var nextEvents: [Event] = []
 
     func readEvents(maxCount: Int, after position: Int64?) -> [Event] {
@@ -130,7 +130,7 @@ final class MockDatabase: Database {
     }
 }
 
-final class MockTracker: PositionDelegate {
+final class MockPositionDelegate: PositionDelegate {
     var initialPosition: Int64?
     var lastUpdatedPosition: Int64?
     
