@@ -45,7 +45,6 @@ let package = Package(
             dependencies: ["Projection", "SQLite"]),
         .testTarget(
             name: "SQLiteProjectionTests",
-            dependencies: ["SQLiteProjection"],
-            resources: [.process("schema.sql")]),
+            dependencies: ["SQLiteProjection", "SQLiteSource"]),
     ]
 )
