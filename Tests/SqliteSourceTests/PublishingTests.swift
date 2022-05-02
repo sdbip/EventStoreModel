@@ -27,19 +27,36 @@ final class PublishingTests: XCTestCase {
         _ = try? FileManager.default.removeItem(atPath: testDBFile)
     }
 
-    func test_canPublishSingleEvent() throws {
+    func test_canPublishEntityWithoutEvents() throws {
         let entity = TestEntity(id: "test", version: .notSaved)
-        entity.unpublishedEvents = [UnpublishedEvent(name: "AnEvent", details: "{}")!]
+        entity.unpublishedEvents = []
 
         let history = try history(afterPublishingChangesFor: entity, actor: "user_x")
 
         XCTAssertEqual(history?.type, TestEntity.type)
         XCTAssertEqual(history?.id, "test")
         XCTAssertEqual(history?.version, 0)
-        XCTAssertEqual(history?.events.count, 1)
-        XCTAssertEqual(history?.events[0].name, "AnEvent")
-        XCTAssertEqual(history?.events[0].jsonDetails, "{}")
-        XCTAssertEqual(history?.events[0].actor, "user_x")
+    }
+
+    func test_canPublishSingleEvent() throws {
+        let entity = TestEntity(id: "test", version: .notSaved)
+        entity.unpublishedEvents = [UnpublishedEvent(name: "AnEvent", details: "{}")!]
+
+        let history = try history(afterPublishingChangesFor: entity, actor: "user_x")
+        let event = history?.events.first
+
+        XCTAssertEqual(event?.name, "AnEvent")
+        XCTAssertEqual(event?.jsonDetails, "{}")
+        XCTAssertEqual(event?.actor, "user_x")
+    }
+
+    func test_versionMatchesNumberOfEvents() throws {
+        let entity = TestEntity(id: "test", version: .notSaved)
+        entity.unpublishedEvents = [UnpublishedEvent(name: "AnEvent", details: "{}")!]
+
+        let history = try history(afterPublishingChangesFor: entity, actor: "user_x")
+
+        XCTAssertEqual(history?.version, 1)
     }
 
     func test_canPublishMultipleEvents() throws {
@@ -53,74 +70,36 @@ final class PublishingTests: XCTestCase {
         let history = try history(afterPublishingChangesFor: entity, actor: "any")
 
         XCTAssertEqual(history?.events.count, 3)
-        XCTAssertEqual(history?.version, 2)
+        XCTAssertEqual(history?.version, 3)
     }
 
-    func test_canPublishToExistingEntity() throws {
-        let database = try Database(openFile: testDBFile)
-        try database.execute("""
-            INSERT INTO Entities (id, type, version)
-            VALUES ('test', 'TestEntity', 0)
-            """
-        )
+    func test_addsEventsExistingEntity() throws {
+        let existingEntity = TestEntity(id: "test", version: .notSaved)
+        try publisher.publishChanges(entity: existingEntity, actor: "any")
 
-        let entity = TestEntity(id: "test", version: .saved(0))
-        entity.unpublishedEvents = [UnpublishedEvent(name: "AnEvent", details: "{}")!]
+        let reconstitutedVersion = TestEntity(id: "test", version: 0)
+        reconstitutedVersion.unpublishedEvents = [UnpublishedEvent(name: "AnEvent", details: "{}")!]
 
-        let history = try history(afterPublishingChangesFor: entity, actor: "any")
+        let history = try history(afterPublishingChangesFor: reconstitutedVersion, actor: "any")
 
         XCTAssertEqual(history?.events.count, 1)
     }
 
     func test_throwsIfVersionHasChanged() throws {
-        let database = try Database(openFile: testDBFile)
-        try database.execute("""
-            INSERT INTO Entities (id, type, version)
-            VALUES ('test', 'TestEntity', 2)
-            """
-        )
+        let existingEntity = TestEntity(id: "test", version: .notSaved)
+        existingEntity.unpublishedEvents = [UnpublishedEvent(name: "AnEvent", details: "{}")!]
+        try publisher.publishChanges(entity: existingEntity, actor: "any")
 
-        let entity = TestEntity(id: "test", version: 1)
-        entity.unpublishedEvents.append(UnpublishedEvent(name: "AnEvent", details: "{}")!)
+        let reconstitutedVersion = TestEntity(id: "test", version: .eventCount(0))
+        reconstitutedVersion.unpublishedEvents.append(UnpublishedEvent(name: "AnEvent", details: "{}")!)
 
-        XCTAssertThrowsError(try publisher.publishChanges(entity: entity, actor: "user_x"))
-    }
-
-    func test_updatesVersion() throws {
-        let database = try Database(openFile: testDBFile)
-        try database.execute("""
-            INSERT INTO Entities (id, type, version)
-            VALUES ('test', 'TestEntity', 1)
-            """
-        )
-
-        let entity = TestEntity(id: "test", version: 1)
-        entity.unpublishedEvents = [
-            UnpublishedEvent(name: "FirstEvent", details: "{}")!,
-            UnpublishedEvent(name: "SecondEvent", details: "{}")!,
-            UnpublishedEvent(name: "ThirdEvent", details: "{}")!
-        ]
-
-        let history = try history(afterPublishingChangesFor: entity, actor: "any")
-
-        XCTAssertEqual(history?.version, 4)
-        XCTAssertEqual(history?.events[0].name, "FirstEvent")
-        XCTAssertEqual(history?.events[1].name, "SecondEvent")
-        XCTAssertEqual(history?.events[2].name, "ThirdEvent")
+        XCTAssertThrowsError(try publisher.publishChanges(entity: reconstitutedVersion, actor: "user_x"))
     }
 
     func test_updatesNextPosition() throws {
-        let database = try Database(openFile: testDBFile)
-        try database.execute("""
-            INSERT INTO Entities (id, type, version)
-            VALUES ('test', 'TestEntity', 1);
-
-            INSERT INTO Events (entity, name, details, actor, version, position)
-            VALUES ('test', 'OldEvent', '{}', 'someone', 0, 1);
-
-            UPDATE Properties SET value = 2 WHERE name = 'next_position';
-            """
-        )
+        let existingEntity = TestEntity(id: "test", version: .notSaved)
+        existingEntity.unpublishedEvents = [UnpublishedEvent(name: "AnEvent", details: "{}")!]
+        try publisher.publishChanges(entity: existingEntity, actor: "any")
 
         let entity = TestEntity(id: "test", version: 1)
         entity.unpublishedEvents = [
@@ -131,46 +110,15 @@ final class PublishingTests: XCTestCase {
 
         try publisher.publishChanges(entity: entity, actor: "user_x")
 
-        XCTAssertEqual(try entityStore.nextPosition(), 5)
-        XCTAssertEqual(try maxPositionOfEvents(forEntityWithId: "test"), 4)
-    }
-
-    func test_canPublishSingleEvents() throws {
-        let database = try Database(openFile: testDBFile)
-        try database.execute("""
-            INSERT INTO Entities (id, type, version)
-            VALUES ('test', 'TestEntity', 1);
-
-            INSERT INTO Events (entity, name, details, actor, version, position)
-            VALUES ('test', 'OldEvent', '{}', 'someone', 0, 1);
-
-            UPDATE Properties SET value = 2 WHERE name = 'next_position';
-            """
-        )
-
-        let event = UnpublishedEvent(name: "AnEvent", details: "{}")!
-
-        try publisher.publish(event, forId: "test", type: "whatever", actor: "user_x")
-
-        XCTAssertEqual(try entityStore.nextPosition(), 3)
-        XCTAssertEqual(try maxPositionOfEvents(forEntityWithId: "test"), 2)
-    }
-
-    func test_createsEntityFromSingleEvents() throws {
-        let event = UnpublishedEvent(name: "AnEvent", details: "{}")!
-
-        try publisher.publish(event, forId: "test", type: "expected", actor: "user_x")
-
-        XCTAssertEqual(try entityStore.nextPosition(), 1)
-        XCTAssertEqual(try entityStore.type(ofEntityWithId: "test"), "expected")
-        XCTAssertEqual(try maxPositionOfEvents(forEntityWithId: "test"), 0)
+        XCTAssertEqual(try entityStore.nextPosition(), 4)
+        XCTAssertEqual(try maxPositionOfEvents(forEntityWithId: "test"), 3)
     }
 
     private func history<EntityType>(afterPublishingChangesFor entity: EntityType, actor: String) throws -> History? where EntityType: Entity {
         try publisher.publishChanges(entity: entity, actor: actor)
         return try entityStore.history(forEntityWithId: entity.id)
     }
-    
+
     private func maxPositionOfEvents(forEntityWithId id: String) throws -> Int64? {
         let database = try Database(openFile: testDBFile)
         return try database.operation(

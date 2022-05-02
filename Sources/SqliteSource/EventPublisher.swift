@@ -18,10 +18,10 @@ public struct EventPublisher {
         try database.transaction {
             guard try database.isUnchanged(entity) else { throw SQLiteError.message("Concurrency Error") }
 
-            if case .saved(let v) = entity.version {
-                try database.updateVersion(ofEntityWithId: entity.id, to: Int32(events.count) + v)
+            if case .eventCount(let count) = entity.version {
+                try database.updateVersion(ofEntityWithId: entity.id, to: Int32(events.count) + count)
             } else {
-                try database.addEntity(id: entity.id, type: EntityType.type, version: Int32(events.count) - 1)
+                try database.addEntity(id: entity.id, type: EntityType.type, version: Int32(events.count))
             }
 
             var nextPosition = try database.nextPosition()
@@ -46,7 +46,7 @@ public struct EventPublisher {
             if currentVersion >= 0 {
                 try database.updateVersion(ofEntityWithId: id, to: currentVersion + 1)
             } else {
-                try database.addEntity(id: id, type: type, version: 0)
+                try database.addEntity(id: id, type: type, version: 1)
             }
 
             let nextPosition = try database.nextPosition()
@@ -80,7 +80,7 @@ private extension Database {
         let expectedVersion: Int32?
         switch entity.version {
             case .notSaved: expectedVersion = nil
-            case .saved(let v): expectedVersion = v
+            case .eventCount(let count): expectedVersion = count
         }
 
         let currentVersion = try self.version(ofEntityWithId: entity.id)
