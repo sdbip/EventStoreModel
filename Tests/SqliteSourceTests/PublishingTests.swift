@@ -8,13 +8,15 @@ private let testDBFile = "test.db"
 
 final class PublishingTests: XCTestCase {
     var publisher: EventPublisher!
+    var entityStore: EntityStore!
 
     override func setUp() {
         _ = try? FileManager.default.removeItem(atPath: testDBFile)
 
-        publisher = EventPublisher(dbFile: testDBFile)
-
         do {
+            publisher = EventPublisher(dbFile: testDBFile)
+            entityStore = EntityStore(dbFile: testDBFile)
+
             try Schema.add(to: testDBFile)
         } catch {
             XCTFail("\(error)")
@@ -29,10 +31,8 @@ final class PublishingTests: XCTestCase {
         let entity = TestEntity(id: "test", version: .notSaved)
         entity.unpublishedEvents = [UnpublishedEvent(name: "AnEvent", details: "{}")!]
 
-        try publisher.publishChanges(entity: entity, actor: "user_x")
+        let history = try history(afterPublishingChangesFor: entity, actor: "user_x")
 
-        let history = try EntityStore(dbFile: testDBFile)
-            .history(forEntityWithId: "test")
         XCTAssertEqual(history?.type, TestEntity.type)
         XCTAssertEqual(history?.id, "test")
         XCTAssertEqual(history?.version, 0)
@@ -50,9 +50,8 @@ final class PublishingTests: XCTestCase {
             UnpublishedEvent(name: "AnEvent", details: "{}")!
         ]
 
-        try publisher.publishChanges(entity: entity, actor: "user_x")
+        let history = try history(afterPublishingChangesFor: entity, actor: "any")
 
-        let history = try EntityStore(dbFile: testDBFile).history(forEntityWithId: "test")
         XCTAssertEqual(history?.events.count, 3)
         XCTAssertEqual(history?.version, 2)
     }
@@ -68,9 +67,8 @@ final class PublishingTests: XCTestCase {
         let entity = TestEntity(id: "test", version: .saved(0))
         entity.unpublishedEvents = [UnpublishedEvent(name: "AnEvent", details: "{}")!]
 
-        try publisher.publishChanges(entity: entity, actor: "user_x")
+        let history = try history(afterPublishingChangesFor: entity, actor: "any")
 
-        let history = try EntityStore(dbFile: testDBFile).history(forEntityWithId: "test")
         XCTAssertEqual(history?.events.count, 1)
     }
 
@@ -103,9 +101,8 @@ final class PublishingTests: XCTestCase {
             UnpublishedEvent(name: "ThirdEvent", details: "{}")!
         ]
 
-        try publisher.publishChanges(entity: entity, actor: "user_x")
+        let history = try history(afterPublishingChangesFor: entity, actor: "any")
 
-        let history = try EntityStore(dbFile: testDBFile).history(forEntityWithId: "test")
         XCTAssertEqual(history?.version, 4)
         XCTAssertEqual(history?.events[0].name, "FirstEvent")
         XCTAssertEqual(history?.events[1].name, "SecondEvent")
@@ -193,6 +190,11 @@ final class PublishingTests: XCTestCase {
             "SELECT type FROM Entities WHERE id = 'test'"
         ).single { $0.string(at: 0) }
         XCTAssertEqual(type, "expected")
+    }
+
+    private func history<EntityType>(afterPublishingChangesFor entity: EntityType, actor: String) throws -> History? where EntityType: Entity {
+        try publisher.publishChanges(entity: entity, actor: actor)
+        return try entityStore.history(forEntityWithId: entity.id)
     }
 }
 
