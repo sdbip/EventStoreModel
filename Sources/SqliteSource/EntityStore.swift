@@ -10,6 +10,19 @@ public struct EntityStore {
     public init(dbFile: String) {
         self.dbFile = dbFile
     }
+    
+    public func nextPosition() throws -> Int64 {
+        let database = try Database(openFile: dbFile)
+        return try database.operation("SELECT value FROM Properties WHERE name = 'next_position'")
+            .single(read: { $0.int64(at: 0) })!
+    }
+    
+    public func type(ofEntityWithId id: String) throws -> String? {
+        let database = try Database(openFile: dbFile)
+        return try database.operation(
+            "SELECT type FROM Entities WHERE id = 'test'"
+        ).single { $0.string(at: 0) }
+    }
 
     public func reconstitute<EntityType: Entity>(entityWithId id: String) throws -> EntityType? {
         guard let history = try history(forEntityWithId: id) else { return nil }

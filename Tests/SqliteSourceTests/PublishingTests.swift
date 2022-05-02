@@ -60,7 +60,7 @@ final class PublishingTests: XCTestCase {
         let database = try Database(openFile: testDBFile)
         try database.execute("""
             INSERT INTO Entities (id, type, version)
-            VALUES ('test', 'TestEntity', 0);
+            VALUES ('test', 'TestEntity', 0)
             """
         )
 
@@ -76,7 +76,7 @@ final class PublishingTests: XCTestCase {
         let database = try Database(openFile: testDBFile)
         try database.execute("""
             INSERT INTO Entities (id, type, version)
-            VALUES ('test', 'TestEntity', 2);
+            VALUES ('test', 'TestEntity', 2)
             """
         )
 
@@ -90,7 +90,7 @@ final class PublishingTests: XCTestCase {
         let database = try Database(openFile: testDBFile)
         try database.execute("""
             INSERT INTO Entities (id, type, version)
-            VALUES ('test', 'TestEntity', 1);
+            VALUES ('test', 'TestEntity', 1)
             """
         )
 
@@ -131,15 +131,8 @@ final class PublishingTests: XCTestCase {
 
         try publisher.publishChanges(entity: entity, actor: "user_x")
 
-        let nextPosition = try database.operation(
-            "SELECT value FROM Properties WHERE name = 'next_position'"
-        ).single { $0.int64(at: 0) }
-        XCTAssertEqual(nextPosition, 5)
-
-        let position = try database.operation(
-            "SELECT MAX(position) FROM Events WHERE entity = 'test'"
-        ).single { $0.int64(at: 0) }
-        XCTAssertEqual(position, 4)
+        XCTAssertEqual(try entityStore.nextPosition(), 5)
+        XCTAssertEqual(try maxPositionOfEvents(forEntityWithId: "test"), 4)
     }
 
     func test_canPublishSingleEvents() throws {
@@ -159,15 +152,8 @@ final class PublishingTests: XCTestCase {
 
         try publisher.publish(event, forId: "test", type: "whatever", actor: "user_x")
 
-        let nextPosition = try database.operation(
-            "SELECT value FROM Properties WHERE name = 'next_position'"
-        ).single { $0.int64(at: 0) }
-        XCTAssertEqual(nextPosition, 3)
-
-        let position = try database.operation(
-            "SELECT MAX(position) FROM Events WHERE entity = 'test'"
-        ).single { $0.int64(at: 0) }
-        XCTAssertEqual(position, 2)
+        XCTAssertEqual(try entityStore.nextPosition(), 3)
+        XCTAssertEqual(try maxPositionOfEvents(forEntityWithId: "test"), 2)
     }
 
     func test_createsEntityFromSingleEvents() throws {
@@ -175,26 +161,21 @@ final class PublishingTests: XCTestCase {
 
         try publisher.publish(event, forId: "test", type: "expected", actor: "user_x")
 
-        let database = try Database(openFile: testDBFile)
-        let nextPosition = try database.operation(
-            "SELECT value FROM Properties WHERE name = 'next_position'"
-        ).single { $0.int64(at: 0) }
-        XCTAssertEqual(nextPosition, 1)
-
-        let position = try database.operation(
-            "SELECT MAX(position) FROM Events WHERE entity = 'test'"
-        ).single { $0.int64(at: 0) }
-        XCTAssertEqual(position, 0)
-
-        let type = try database.operation(
-            "SELECT type FROM Entities WHERE id = 'test'"
-        ).single { $0.string(at: 0) }
-        XCTAssertEqual(type, "expected")
+        XCTAssertEqual(try entityStore.nextPosition(), 1)
+        XCTAssertEqual(try entityStore.type(ofEntityWithId: "test"), "expected")
+        XCTAssertEqual(try maxPositionOfEvents(forEntityWithId: "test"), 0)
     }
 
     private func history<EntityType>(afterPublishingChangesFor entity: EntityType, actor: String) throws -> History? where EntityType: Entity {
         try publisher.publishChanges(entity: entity, actor: actor)
         return try entityStore.history(forEntityWithId: entity.id)
+    }
+    
+    private func maxPositionOfEvents(forEntityWithId id: String) throws -> Int64? {
+        let database = try Database(openFile: testDBFile)
+        return try database.operation(
+            "SELECT MAX(position) FROM Events WHERE entity = 'test'"
+        ).single { $0.int64(at: 0) }
     }
 }
 

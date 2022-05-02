@@ -35,6 +35,10 @@ public struct Operation {
     public func single<T>(read: (ResultRow) throws -> T) throws -> T? {
         return try query(read: read).first
     }
+    
+    public func single<T>(read: (ResultRow) throws -> T?) throws -> T? {
+        return try query(read: read).first?.flatMap { $0 }
+    }
 
     public func query<T>(read: (ResultRow) throws -> T) throws -> [T] {
         var result: [T] = []
