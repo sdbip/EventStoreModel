@@ -1,4 +1,42 @@
+import Foundation
+
+public struct EntityData {
+    public let id: String
+    public let type: String
+    public let version: Int32
+
+    init(id: String, type: String, version: Int32) {
+        self.id = id
+        self.type = type
+        self.version = version
+    }
+}
+
+public struct EventData {
+    public let entity: String
+    public let name: String
+    public let details: String
+    public let actor: String
+    public let timestamp: Date
+
+    init(entity: String, name: String, details: String, actor: String, timestamp: Date) {
+        self.entity = entity
+        self.name = name
+        self.details = details
+        self.actor = actor
+        self.timestamp = timestamp
+    }
+}
+
 public extension Database {
+    func entity(withId id: String) throws -> EntityData? {
+        return try operation("SELECT type, version FROM Entities WHERE id = ?", id)
+        .single {
+            guard let type = $0.string(at: 0) else { throw SQLiteError.message("Entity has no type") }
+            return EntityData(id: id, type: type, version: $0.int32(at: 1))
+        }
+    }
+
     func type(ofEntityWithId id: String) throws -> String? {
         return try operation("SELECT type FROM Entities WHERE id = 'test'")
             .single { $0.string(at: 0) }
@@ -50,5 +88,15 @@ public extension Database {
             version,
             position
         ).execute()
+    }
+    
+    func allEvents(forEntityWithId entityId: String) throws -> [EventData] {
+        return try self.operation("SELECT name, details, actor, timestamp FROM Events WHERE entity = ? ORDER BY version", entityId)
+            .query {
+                guard let name = $0.string(at: 0) else { throw SQLiteError.message("Event has no name") }
+                guard let details = $0.string(at: 1) else { throw SQLiteError.message("Event has no details") }
+                guard let actor = $0.string(at: 2) else { throw SQLiteError.message("Event has no actor") }
+                return EventData(entity: entityId, name: name, details: details, actor: actor, timestamp: $0.date(at: 3))
+            }
     }
 }

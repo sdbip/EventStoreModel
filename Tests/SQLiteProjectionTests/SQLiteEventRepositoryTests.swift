@@ -20,10 +20,7 @@ final class SQLiteEventRepositoryTests: XCTestCase {
             database = try Database(openFile: testDBFile)
 
             try Schema.add(to: testDBFile)
-            try database.execute("""
-                INSERT INTO Entities (id, type, version)
-                    VALUES ('entity', 'type', 0);
-                """)
+            try database.addEntity(id: "entity", type: "type", version: 0)
         } catch {
             XCTFail("\(error)")
         }
@@ -35,10 +32,7 @@ final class SQLiteEventRepositoryTests: XCTestCase {
     }
 
     func test_readEventsAt_returnsEvents() throws {
-        try database.execute("""
-            INSERT INTO Events (entity, name, details, actor, version, position)
-                VALUES ('entity', 'name', '{}', 'actor', 1, 1)
-            """)
+        try database.insertEvent(entityId: "entity", name: "name", jsonDetails: "{}", actor: "actor", version: 1, position: 1)
 
         let events = try repository.readEvents(at: 1)
 
@@ -52,12 +46,9 @@ final class SQLiteEventRepositoryTests: XCTestCase {
     }
 
     func test_readEventsAt_returnsOnlyEventsAtTheIndicatedPosition() throws {
-        try database.execute("""
-            INSERT INTO Events (entity, name, details, actor, version, position) VALUES
-                ('entity', 'name', '{}', 'actor', 0, 0),
-                ('entity', 'name', '{}', 'actor', 1, 1),
-                ('entity', 'name', '{}', 'actor', 2, 2)
-            """)
+        try database.insertEvent(entityId: "entity", name: "name", jsonDetails: "{}", actor: "actor", version: 0, position: 0)
+        try database.insertEvent(entityId: "entity", name: "name", jsonDetails: "{}", actor: "actor", version: 1, position: 1)
+        try database.insertEvent(entityId: "entity", name: "name", jsonDetails: "{}", actor: "actor", version: 2, position: 2)
 
         let events = try repository.readEvents(at: 1)
 
@@ -66,10 +57,7 @@ final class SQLiteEventRepositoryTests: XCTestCase {
     }
 
     func test_readEventsAfter_returnsEvents() throws {
-        try database.execute("""
-            INSERT INTO Events (entity, name, details, actor, version, position)
-                VALUES ('entity', 'name', '{}', 'actor', 1, 1)
-            """)
+        try database.insertEvent(entityId: "entity", name: "name", jsonDetails: "{}", actor: "actor", version: 1, position: 1)
 
         let events = try repository.readEvents(maxCount: 1, after: 0)
 
@@ -83,12 +71,9 @@ final class SQLiteEventRepositoryTests: XCTestCase {
     }
 
     func test_readEventsAfter_returnsOnlyEventsAtLaterPositions() throws {
-        try database.execute("""
-            INSERT INTO Events (entity, name, details, actor, version, position) VALUES
-                ('entity', 'name', '{}', 'actor', 0, 0),
-                ('entity', 'name', '{}', 'actor', 1, 1),
-                ('entity', 'name', '{}', 'actor', 2, 2)
-            """)
+        try database.insertEvent(entityId: "entity", name: "name", jsonDetails: "{}", actor: "actor", version: 0, position: 0)
+        try database.insertEvent(entityId: "entity", name: "name", jsonDetails: "{}", actor: "actor", version: 1, position: 1)
+        try database.insertEvent(entityId: "entity", name: "name", jsonDetails: "{}", actor: "actor", version: 2, position: 2)
 
         let events = try repository.readEvents(maxCount: 3, after: 0)
 
@@ -96,12 +81,9 @@ final class SQLiteEventRepositoryTests: XCTestCase {
     }
 
     func test_readEventsAfter_returnsAllEventsWhenNoPositionSpecified() throws {
-        try database.execute("""
-            INSERT INTO Events (entity, name, details, actor, version, position) VALUES
-                ('entity', 'name', '{}', 'actor', 0, 0),
-                ('entity', 'name', '{}', 'actor', 1, 1),
-                ('entity', 'name', '{}', 'actor', 2, 2)
-            """)
+        try database.insertEvent(entityId: "entity", name: "name", jsonDetails: "{}", actor: "actor", version: 0, position: 0)
+        try database.insertEvent(entityId: "entity", name: "name", jsonDetails: "{}", actor: "actor", version: 1, position: 1)
+        try database.insertEvent(entityId: "entity", name: "name", jsonDetails: "{}", actor: "actor", version: 2, position: 2)
 
         let events = try repository.readEvents(maxCount: 3, after: nil)
 
@@ -109,12 +91,9 @@ final class SQLiteEventRepositoryTests: XCTestCase {
     }
 
     func test_readEventsFromBeginning_returnsNoMoreThanMaxCountEvents() throws {
-        try database.execute("""
-            INSERT INTO Events (entity, name, details, actor, version, position) VALUES
-                ('entity', 'name', '{}', 'actor', 0, 0),
-                ('entity', 'name', '{}', 'actor', 1, 1),
-                ('entity', 'name', '{}', 'actor', 2, 2)
-            """)
+        try database.insertEvent(entityId: "entity", name: "name", jsonDetails: "{}", actor: "actor", version: 0, position: 0)
+        try database.insertEvent(entityId: "entity", name: "name", jsonDetails: "{}", actor: "actor", version: 1, position: 1)
+        try database.insertEvent(entityId: "entity", name: "name", jsonDetails: "{}", actor: "actor", version: 2, position: 2)
 
         let events = try repository.readEvents(maxCount: 2, after: nil)
 
@@ -122,12 +101,9 @@ final class SQLiteEventRepositoryTests: XCTestCase {
     }
 
     func test_readEventsAfter_returnsNoMoreThanMaxCountEvents() throws {
-        try database.execute("""
-            INSERT INTO Events (entity, name, details, actor, version, position) VALUES
-                ('entity', 'name', '{}', 'actor', 0, 0),
-                ('entity', 'name', '{}', 'actor', 1, 1),
-                ('entity', 'name', '{}', 'actor', 2, 2)
-            """)
+        try database.insertEvent(entityId: "entity", name: "name", jsonDetails: "{}", actor: "actor", version: 0, position: 0)
+        try database.insertEvent(entityId: "entity", name: "name", jsonDetails: "{}", actor: "actor", version: 1, position: 1)
+        try database.insertEvent(entityId: "entity", name: "name", jsonDetails: "{}", actor: "actor", version: 2, position: 2)
 
         let events = try repository.readEvents(maxCount: 1, after: 0)
 

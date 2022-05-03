@@ -11,7 +11,7 @@ public final class SQLiteEventRepository: EventRepository {
     }
 
     public func readEvents(maxCount: Int, after position: Int64?) throws -> [Event] {
-        let operation = try self.operation(clause: after(position), limit: "LIMIT \(maxCount)")
+        let operation = try operation(clause: after(position), limit: "LIMIT \(maxCount)")
         return try events(from: operation)
     }
     
@@ -29,13 +29,13 @@ public final class SQLiteEventRepository: EventRepository {
     }
 
     private func events(_ clause: Clause?) throws -> [Event] {
-        let operation = try self.operation(clause: clause)
+        let operation = try operation(clause: clause)
         return try events(from: operation)
     }
 
     private func operation(clause: Clause? = nil, limit: String? = nil) throws -> Operation {
         let baseQuery = """
-            SELECT entity, type, name, details, position FROM Events
+            SELECT Events.entity, Entities.type, Events.name, Events.details, Events.position FROM Events
                 JOIN Entities ON Events.entity = Entities.id
             """
 
