@@ -41,20 +41,20 @@ private extension Database {
                 "SELECT * FROM Entities WHERE id = ? ORDER BY version",
                 entityId
             )
-            return try operation.single { row in
-                guard let type = row.string(at: 1) else { throw SQLiteError.message("Entity has no type") }
-                return History(id: entityId, type: type, events: events, version: .eventCount(row.int32(at: 2)))
+            return try operation.single {
+                guard let type = $0.string(at: 1) else { throw SQLiteError.message("Entity has no type") }
+                return History(id: entityId, type: type, events: events, version: .eventCount($0.int32(at: 2)))
             }
         }
     }
 
     private func allEvents(forEntityWithId entityId: String) throws -> [PublishedEvent] {
         return try self.operation("SELECT * FROM Events WHERE entity = ?", entityId)
-            .query { row -> PublishedEvent in
-                guard let name = row.string(at: 1) else { throw SQLiteError.message("Event has no name") }
-                guard let details = row.string(at: 2) else { throw SQLiteError.message("Event has no details") }
-                guard let actor = row.string(at: 3) else { throw SQLiteError.message("Event has no actor") }
-                return PublishedEvent(name: name, details: details, actor: actor, timestamp: row.date(at: 4))
+            .query {
+                guard let name = $0.string(at: 1) else { throw SQLiteError.message("Event has no name") }
+                guard let details = $0.string(at: 2) else { throw SQLiteError.message("Event has no details") }
+                guard let actor = $0.string(at: 3) else { throw SQLiteError.message("Event has no actor") }
+                return PublishedEvent(name: name, details: details, actor: actor, timestamp: $0.date(at: 4))
             }
     }
 }
