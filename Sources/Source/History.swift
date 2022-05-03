@@ -11,13 +11,13 @@ public struct History {
         self.version = version
     }
 
-    public func entity<EntityType: Entity>() throws -> EntityType {
-        guard EntityType.type == type else {
+    public func entity<State: EntityState>() throws -> Entity<State> {
+        guard State.type == type else {
             throw ReconstitutionError.incorrectType
         }
 
-        let entity = EntityType(id: id, version: version)
-        for event in events { entity.apply(event) }
+        let entity = Entity<State>(id: id, version: version)
+        for event in events { entity.state.apply(event) }
         return entity
     }
 }

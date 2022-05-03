@@ -90,7 +90,7 @@ final class EventSourceTests: XCTestCase {
 
         XCTAssertEqual(receptacle.receivedEvents, ["TheFirstEvent", "TheSecondEvent"])
     }
-    
+
     func test_notifiesTheUpdatedPosition() throws {
         let receptacle = TestReceptacle(handledEvents: ["TheFirstEvent", "TheSecondEvent"])
         eventSource.add(receptacle)
@@ -110,9 +110,8 @@ final class EventSourceTests: XCTestCase {
 
     private func event(named name: String, position: Int64) -> Event {
         Event(
-            entityId: "some_entity",
+            entity: Entity(id: "some_entity", type: "some_type"),
             name: name,
-            entityType: "some_type",
             details: "{}",
             position: position)
     }
@@ -133,7 +132,7 @@ final class TransientEventRepository: EventRepository {
 final class MockPositionDelegate: PositionDelegate {
     var initialPosition: Int64?
     var lastUpdatedPosition: Int64?
-    
+
     func lastProjectedPosition() throws -> Int64? {
         return initialPosition
     }

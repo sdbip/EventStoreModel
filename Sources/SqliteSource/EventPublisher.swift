@@ -10,10 +10,10 @@ public struct EventPublisher {
         self.dbFile = dbFile
     }
 
-    public func publishChanges<EntityType>(entity: EntityType, actor: String) throws where EntityType: Entity {
+    public func publishChanges<State>(entity: Entity<State>, actor: String) throws where State: EntityState {
         let database = try Database(openFile: dbFile)
 
-        let events = entity.unpublishedEvents
+        let events = entity.state.unpublishedEvents
 
         try database.transaction {
             guard try database.isUnchanged(entity) else { throw SQLiteError.message("Concurrency Error") }
@@ -21,7 +21,7 @@ public struct EventPublisher {
             if case .eventCount(let count) = entity.version {
                 try database.updateVersion(ofEntityWithId: entity.id, to: Int32(events.count) + count)
             } else {
-                try database.addEntity(id: entity.id, type: EntityType.type, version: Int32(events.count))
+                try database.addEntity(id: entity.id, type: State.type, version: Int32(events.count))
             }
 
             var nextPosition = try database.nextPosition()
@@ -76,7 +76,7 @@ private extension Database {
             .execute()
     }
 
-    func isUnchanged(_ entity: Entity) throws -> Bool {
+    func isUnchanged<EntityState>(_ entity: Entity<EntityState>) throws -> Bool {
         let expectedVersion: Int32?
         switch entity.version {
             case .notSaved: expectedVersion = nil

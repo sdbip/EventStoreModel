@@ -44,9 +44,8 @@ final class SQLiteEventRepositoryTests: XCTestCase {
 
         XCTAssertEqual(events,
             [Event(
-                entityId: "entity",
+                entity: Entity(id: "entity", type: "type"),
                 name: "name",
-                entityType: "type",
                 details: "{}",
                 position: 1
             )])
@@ -76,9 +75,8 @@ final class SQLiteEventRepositoryTests: XCTestCase {
 
         XCTAssertEqual(events,
             [Event(
-                entityId: "entity",
+                entity: Entity(id: "entity", type: "type"),
                 name: "name",
-                entityType: "type",
                 details: "{}",
                 position: 1
             )])
@@ -139,8 +137,7 @@ final class SQLiteEventRepositoryTests: XCTestCase {
 
 extension Event: Equatable {
     public static func ==(left: Event, right: Event) -> Bool {
-        return left.entityId == right.entityId &&
-        left.entityType == right.entityType &&
+        return left.entity == right.entity &&
         left.name == right.name &&
         left.jsonDetails == right.jsonDetails &&
         left.position == right.position

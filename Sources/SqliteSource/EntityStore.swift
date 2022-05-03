@@ -24,7 +24,7 @@ public struct EntityStore {
         ).single { $0.string(at: 0) }
     }
 
-    public func reconstitute<EntityType: Entity>(entityWithId id: String) throws -> EntityType? {
+    public func reconstitute<State: EntityState>(entityWithId id: String) throws -> Entity<State>? {
         guard let history = try history(forEntityWithId: id) else { return nil }
         return try history.entity()
     }

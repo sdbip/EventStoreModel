@@ -2,20 +2,13 @@
 /// its state. It may be meaningful to refer to entities that “never” change (like nations or
 /// departments) but such entities can probably just be referred to as simple names. They do not
 /// need this protocol.
-public protocol Entity {
-
-    /// A type identifier, used to detect when trying to reconstitute an entity
-    /// of the wrong type.
-    ///
-    /// Note to implementor: While multiple types with the same id are allowed,
-    /// such a situation will have no way to detect erroneous references.
-    static var type: String { get }
+public struct Entity<State> where State: EntityState {
 
     /// A unique identifier for this entity.
     ///
     /// Note to implementor: This property should be immutable and always
     /// return the same value that was passed to the initializer.
-    var id: String { get }
+    public let id: String
 
     /// Used to detect concurrent changes to the same entity. If the
     /// version has changed in the database since reconstituting this
@@ -23,15 +16,15 @@ public protocol Entity {
     ///
     /// Note to implementor: This property should be immutable and always
     /// return the same value that was passed to the initializer.
-    var version: EntityVersion { get }
+    public let version: EntityVersion
 
-    /// All events that need to be published to persist the changes since
-    /// the entity was reconstituted.
-    var unpublishedEvents: [UnpublishedEvent] { get }
+    public let state: State
 
-    init(id: String, version: EntityVersion)
+    public init(id: String, version: EntityVersion) {
+        self.id = id
+        self.version = version
 
-    /// Applies a published event to update the current state of the entity
-    func apply(_ event: PublishedEvent)
+        state = State()
+    }
 
 }

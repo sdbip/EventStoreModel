@@ -57,9 +57,8 @@ public final class SQLiteEventRepository: EventRepository {
             else { throw SQLiteError.unknown }
             
             return Event(
-                entityId: entityId,
+                entity: Entity(id: entityId, type: type),
                 name: name,
-                entityType: type,
                 details: details,
                 position: $0.int64(at: 4))
         }

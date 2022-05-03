@@ -3,11 +3,11 @@ import Source
 
 final class DetailsTests: XCTestCase {
     func test_writesCodableDetails() throws {
-        let counter = Counter(id: "counter", version: .notSaved)
-        counter.step(count: 10)
+        let counter = Entity<Counter>(id: "counter", version: .notSaved)
+        counter.state.step(count: 10)
 
-        XCTAssertEqual(counter.unpublishedEvents.count, 1)
-        XCTAssertEqual(counter.unpublishedEvents[0].jsonDetails, #"{"count":10}"#)
+        XCTAssertEqual(counter.state.unpublishedEvents.count, 1)
+        XCTAssertEqual(counter.state.unpublishedEvents[0].jsonDetails, #"{"count":10}"#)
     }
 
     func test_readsDecodableDetails() throws {
@@ -24,22 +24,15 @@ final class DetailsTests: XCTestCase {
             ],
             version: 0)
 
-        let counter: Counter = try history.entity()
-        XCTAssertEqual(counter.currentValue, 10)
+        let counter: Entity<Counter> = try history.entity()
+        XCTAssertEqual(counter.state.currentValue, 10)
     }
 }
 
-final class Counter: Entity {
+final class Counter: EntityState {
     static let type = "Counter"
-    let id: String
-    let version: EntityVersion
     var unpublishedEvents: [UnpublishedEvent] = []
     var currentValue = 0
-
-    init(id: String, version: EntityVersion) {
-        self.id = id
-        self.version = version
-    }
 
     func step(count: Int) {
         unpublishedEvents.append(try! UnpublishedEvent(name: "DidStep", encodableDetails: DidStepDetails(count: count)))
