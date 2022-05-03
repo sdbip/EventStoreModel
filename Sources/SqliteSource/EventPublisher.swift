@@ -30,7 +30,7 @@ public struct EventPublisher {
             if let currentVersion = currentVersion {
                 try database.updateVersion(ofEntityWithId: entityId, to: Int32(events.count) + currentVersion)
             } else {
-                try database.addEntity(id: entityId, type: entityType, version: Int32(events.count))
+                try database.insertEntity(id: entityId, type: entityType, version: Int32(events.count))
             }
 
             var nextPosition = try database.nextPosition()

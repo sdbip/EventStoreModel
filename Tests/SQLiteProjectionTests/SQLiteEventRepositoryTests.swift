@@ -20,7 +20,7 @@ final class SQLiteEventRepositoryTests: XCTestCase {
             database = try Database(openFile: testDBFile)
 
             try Schema.add(to: testDBFile)
-            try database.addEntity(id: "entity", type: "type", version: 0)
+            try database.insertEntity(id: "entity", type: "type", version: 0)
         } catch {
             XCTFail("\(error)")
         }

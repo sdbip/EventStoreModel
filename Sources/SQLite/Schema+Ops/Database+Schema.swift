@@ -57,30 +57,18 @@ public extension Database {
             .execute()
     }
 
-    func addEntity(id: String, type: String, version: Int32) throws {
-        try operation("""
-            INSERT INTO Entities (id, type, version)
-            VALUES (?, ?, ?);
-            """,
-            id,
-            type,
-            version
-        ).execute()
+    func insertEntity(id: String, type: String, version: Int32) throws {
+        try operation("INSERT INTO Entities (id, type, version) VALUES (?, ?, ?)", id, type, version)
+            .execute()
     }
 
     func updateVersion(ofEntityWithId id: String, to version: Int32) throws {
-        try operation(
-            "UPDATE Entities SET version = ? WHERE id = ?",
-            version,
-            id
-        ).execute()
+        try operation("UPDATE Entities SET version = ? WHERE id = ?", version, id)
+            .execute()
     }
 
     func insertEvent(entityId: String, name: String, jsonDetails: String, actor: String, version: Int32, position: Int64) throws {
-        try operation("""
-            INSERT INTO Events (entity, name, details, actor, version, position)
-            VALUES (?, ?, ?, ?, ?, ?);
-            """,
+        try operation("INSERT INTO Events (entity, name, details, actor, version, position) VALUES (?, ?, ?, ?, ?, ?)",
             entityId,
             name,
             jsonDetails,
