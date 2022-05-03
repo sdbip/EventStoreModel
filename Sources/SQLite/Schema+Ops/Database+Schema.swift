@@ -1,23 +1,26 @@
 public extension Database {
+    func type(ofEntityWithId id: String) throws -> String? {
+        return try operation("SELECT type FROM Entities WHERE id = 'test'")
+            .single { $0.string(at: 0) }
+    }
+
     func version(ofEntityWithId id: String) throws -> Int32? {
-        return try self
-            .operation("SELECT version FROM Entities WHERE id = ?", id)
+        return try operation("SELECT version FROM Entities WHERE id = ?", id)
             .single(read: { $0.int32(at: 0) })
     }
 
     func nextPosition() throws -> Int64 {
-        try self.operation("SELECT value FROM Properties WHERE name = 'next_position'")
+        try operation("SELECT value FROM Properties WHERE name = 'next_position'")
             .single(read: { $0.int64(at: 0) })!
     }
 
     func setPosition(_ position: Int64) throws {
-        try self
-            .operation("UPDATE Properties SET value = ? WHERE name = 'next_position'", position)
+        try operation("UPDATE Properties SET value = ? WHERE name = 'next_position'", position)
             .execute()
     }
 
     func addEntity(id: String, type: String, version: Int32) throws {
-        try self.operation("""
+        try operation("""
             INSERT INTO Entities (id, type, version)
             VALUES (?, ?, ?);
             """,
@@ -28,7 +31,7 @@ public extension Database {
     }
 
     func updateVersion(ofEntityWithId id: String, to version: Int32) throws {
-        try self.operation(
+        try operation(
             "UPDATE Entities SET version = ? WHERE id = ?",
             version,
             id
@@ -36,7 +39,7 @@ public extension Database {
     }
 
     func insertEvent(entityId: String, name: String, jsonDetails: String, actor: String, version: Int32, position: Int64) throws {
-        try self.operation("""
+        try operation("""
             INSERT INTO Events (entity, name, details, actor, version, position)
             VALUES (?, ?, ?, ?, ?, ?);
             """,

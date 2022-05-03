@@ -13,15 +13,12 @@ public struct EntityStore {
     
     public func nextPosition() throws -> Int64 {
         let database = try Database(openFile: dbFile)
-        return try database.operation("SELECT value FROM Properties WHERE name = 'next_position'")
-            .single(read: { $0.int64(at: 0) })!
+        return try database.nextPosition()
     }
     
     public func type(ofEntityWithId id: String) throws -> String? {
         let database = try Database(openFile: dbFile)
-        return try database.operation(
-            "SELECT type FROM Entities WHERE id = 'test'"
-        ).single { $0.string(at: 0) }
+        return try database.type(ofEntityWithId: id)
     }
 
     public func reconstitute<State: EntityState>(entityWithId id: String) throws -> Entity<State>? {
@@ -31,24 +28,27 @@ public struct EntityStore {
 
     public func history(forEntityWithId id: String) throws -> History? {
         let database = try Database(openFile: dbFile)
-
-        return try database.transaction {
-            let events = try database.allEvents(forEntityWithId: id)
-
-            let operation = try database.operation(
-                "SELECT * FROM Entities WHERE id = ?1 ORDER BY version",
-                id
-            )
-            return try operation.single { row in
-                guard let type = row.string(at: 1) else { throw SQLiteError.message("Entity has no type") }
-                return History(id: id, type: type, events: events, version: .eventCount(row.int32(at: 2)))
-            }
-        }
+        return try database.history(forEntityWithId: id)
     }
 }
 
 private extension Database {
-    func allEvents(forEntityWithId entityId: String) throws -> [PublishedEvent] {
+    func history(forEntityWithId entityId: String) throws -> History? {
+        return try transaction {
+            let events = try allEvents(forEntityWithId: entityId)
+
+            let operation = try operation(
+                "SELECT * FROM Entities WHERE id = ? ORDER BY version",
+                entityId
+            )
+            return try operation.single { row in
+                guard let type = row.string(at: 1) else { throw SQLiteError.message("Entity has no type") }
+                return History(id: entityId, type: type, events: events, version: .eventCount(row.int32(at: 2)))
+            }
+        }
+    }
+
+    private func allEvents(forEntityWithId entityId: String) throws -> [PublishedEvent] {
         return try self.operation("SELECT * FROM Events WHERE entity = ?", entityId)
             .query { row -> PublishedEvent in
                 guard let name = row.string(at: 1) else { throw SQLiteError.message("Event has no name") }
