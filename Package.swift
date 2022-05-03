@@ -20,7 +20,8 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
             name: "SQLite",
-            dependencies: []),
+            dependencies: [],
+            resources: [.process("Schema+Ops/schema.sql")]),
         .target(
             name: "Source",
             dependencies: []),
@@ -29,8 +30,7 @@ let package = Package(
             dependencies: ["Source"]),
         .target(
             name: "SQLiteSource",
-            dependencies: ["Source", "SQLite"],
-            resources: [.process("schema.sql")]),
+            dependencies: ["Source", "SQLite"]),
         .testTarget(
             name: "SQLiteSourceTests",
             dependencies: ["SQLiteSource"]),

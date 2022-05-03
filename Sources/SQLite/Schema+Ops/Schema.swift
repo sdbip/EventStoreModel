@@ -1,5 +1,4 @@
 import Foundation
-import SQLite
 
 public enum Schema {
     public static func add(to dbFile: String) throws {
