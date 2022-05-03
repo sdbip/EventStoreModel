@@ -2,10 +2,10 @@ public enum EntityVersion {
     case notSaved
     case eventCount(Int32)
 
-    public var next: Int32 {
+    public var value: Int32? {
         switch self {
-            case .notSaved: return 0
-            case .eventCount(let count): return count + 1
+            case .notSaved: return nil
+            case .eventCount(let count): return count
         }
     }
 }

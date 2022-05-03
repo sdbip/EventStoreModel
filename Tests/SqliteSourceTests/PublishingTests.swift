@@ -33,7 +33,7 @@ final class PublishingTests: XCTestCase {
 
         let history = try history(afterPublishingChangesFor: entity, actor: "user_x")
 
-        XCTAssertEqual(history?.type, TestEntity.type)
+        XCTAssertEqual(history?.type, TestEntity.typeId)
         XCTAssertEqual(history?.id, "test")
         XCTAssertEqual(history?.version, 0)
     }
@@ -128,9 +128,9 @@ final class PublishingTests: XCTestCase {
 }
 
 final class TestEntity: EntityState {
-    static let type = "TestEntity"
+    static let typeId = "TestEntity"
 
     var unpublishedEvents: [UnpublishedEvent] = []
 
-    func apply(_ event: PublishedEvent) {}
+    func replay(_ event: PublishedEvent) {}
 }

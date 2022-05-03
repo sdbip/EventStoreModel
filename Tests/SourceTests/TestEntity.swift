@@ -2,11 +2,11 @@ import XCTest
 import Source
 
 final class TestEntity: EntityState {
-    static let type = "TestEntity"
+    static let typeId = "TestEntity"
     let unpublishedEvents: [UnpublishedEvent] = []
     var lastReconstitutedEvent: PublishedEvent?
 
-    func apply(_ event: PublishedEvent) {
+    func replay(_ event: PublishedEvent) {
         lastReconstitutedEvent = event
     }
 }

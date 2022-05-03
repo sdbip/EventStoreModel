@@ -12,12 +12,12 @@ public struct History {
     }
 
     public func entity<State: EntityState>() throws -> Entity<State> {
-        guard State.type == type else {
+        guard State.typeId == type else {
             throw ReconstitutionError.incorrectType
         }
 
         let entity = Entity<State>(id: id, version: version)
-        for event in events { entity.state.apply(event) }
+        for event in events { entity.state.replay(event) }
         return entity
     }
 }

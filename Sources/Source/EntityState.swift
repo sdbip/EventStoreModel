@@ -1,19 +1,22 @@
+/// The state of an entity.
 public protocol EntityState: AnyObject {
 
-    /// A type identifier, used to detect when trying to reconstitute an entity
-    /// of the wrong type.
+    /// A unique identifier for this type, used to detect when trying to
+    /// reconstitute an entity of the wrong type.
     ///
-    /// Note to implementor: While multiple types with the same id are allowed,
-    /// such a situation will have no way to detect erroneous references.
-    static var type: String { get }
+    /// Note to implementor: While multiple types with the same id are
+    /// technically allowed, it will eliminate the ability to detect errors.
+    static var typeId: String { get }
 
-    /// All events that need to be published to persist the changes since
-    /// the entity was reconstituted.
+    /// All events that need to be published to persist the changes since the
+    /// entity was reconstituted.
     var unpublishedEvents: [UnpublishedEvent] { get }
 
     init()
 
-    /// Applies a published event to update the current state of the entity
-    func apply(_ event: PublishedEvent)
+    /// Replays a published event to update the current state of the entity, so
+    /// that the correct behaviour can be enforced. This can be ignored if the
+    /// entity's behaviour is not affected by the change.
+    func replay(_ event: PublishedEvent)
 
 }

@@ -13,7 +13,7 @@ final class DetailsTests: XCTestCase {
     func test_readsDecodableDetails() throws {
         let history = History(
             id: "counter",
-            type: Counter.type,
+            type: Counter.typeId,
             events: [
                 PublishedEvent(
                     name: "DidStep",
@@ -30,7 +30,7 @@ final class DetailsTests: XCTestCase {
 }
 
 final class Counter: EntityState {
-    static let type = "Counter"
+    static let typeId = "Counter"
     var unpublishedEvents: [UnpublishedEvent] = []
     var currentValue = 0
 
@@ -38,7 +38,7 @@ final class Counter: EntityState {
         unpublishedEvents.append(try! UnpublishedEvent(name: "DidStep", encodableDetails: DidStepDetails(count: count)))
     }
 
-    func apply(_ event: PublishedEvent) {
+    func replay(_ event: PublishedEvent) {
         if event.name == "DidStep", let details = try? event.details(as: DidStepDetails.self) {
             currentValue += details.count
         }
