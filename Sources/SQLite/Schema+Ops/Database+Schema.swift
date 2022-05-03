@@ -1,5 +1,15 @@
 import Foundation
 
+public struct EntityId {
+    public let id: String
+    public let type: String
+
+    init(id: String, type: String) {
+        self.id = id
+        self.type = type
+    }
+}
+
 public struct EntityData {
     public let id: String
     public let type: String
@@ -13,13 +23,13 @@ public struct EntityData {
 }
 
 public struct EventData {
-    public let entity: String
+    public let entity: EntityId
     public let name: String
     public let details: String
     public let actor: String
     public let timestamp: Date
 
-    init(entity: String, name: String, details: String, actor: String, timestamp: Date) {
+    init(entity: EntityId, name: String, details: String, actor: String, timestamp: Date) {
         self.entity = entity
         self.name = name
         self.details = details
@@ -71,9 +81,10 @@ public extension Database {
 }
 
 public extension Database {
-    func insertEvent(entityId: String, name: String, jsonDetails: String, actor: String, version: Int32, position: Int64) throws {
-        try operation("INSERT INTO Events (entity, name, details, actor, version, position) VALUES (?, ?, ?, ?, ?, ?)",
+    func insertEvent(entityId: String, entityType: String, name: String, jsonDetails: String, actor: String, version: Int32, position: Int64) throws {
+        try operation("INSERT INTO Events (entityId, entityType, name, details, actor, version, position) VALUES (?, ?, ?, ?, ?, ?, ?)",
             entityId,
+            entityType,
             name,
             jsonDetails,
             actor,
@@ -83,12 +94,14 @@ public extension Database {
     }
     
     func allEvents(forEntityWithId entityId: String) throws -> [EventData] {
-        return try self.operation("SELECT name, details, actor, timestamp FROM Events WHERE entity = ? ORDER BY version", entityId)
+        return try self.operation("SELECT entityType, name, details, actor, timestamp FROM Events WHERE entityId = ? ORDER BY version", entityId)
             .query {
-                guard let name = $0.string(at: 0) else { throw SQLiteError.message("Event has no name") }
-                guard let details = $0.string(at: 1) else { throw SQLiteError.message("Event has no details") }
-                guard let actor = $0.string(at: 2) else { throw SQLiteError.message("Event has no actor") }
-                return EventData(entity: entityId, name: name, details: details, actor: actor, timestamp: $0.date(at: 3))
+                guard let type = $0.string(at: 0) else { throw SQLiteError.message("Event has no entityType") }
+                guard let name = $0.string(at: 1) else { throw SQLiteError.message("Event has no name") }
+                guard let details = $0.string(at: 2) else { throw SQLiteError.message("Event has no details") }
+                guard let actor = $0.string(at: 3) else { throw SQLiteError.message("Event has no actor") }
+                let entity = EntityId(id: entityId, type: type)
+                return EventData(entity: entity, name: name, details: details, actor: actor, timestamp: $0.date(at: 4))
             }
     }
 }

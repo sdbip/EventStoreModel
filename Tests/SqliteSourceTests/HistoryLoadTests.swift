@@ -38,13 +38,8 @@ final class HistoryLoadTests: XCTestCase {
     }
 
     func test_fetchesEventData() throws {
-        try database.execute("""
-            INSERT INTO Entities (id, type, version) VALUES
-                ('test', 'TheType', 42);
-            INSERT INTO Events (entity, name, details, actor, timestamp, version, position) VALUES
-                ('test', 'TheEvent', '{}', 'a_user', 0, 0, 0)
-            """
-        )
+        try database.insertEntity(id: "test", type: "TheType", version: 42)
+        try database.insertEvent(entityId: "test", entityType: "TheType", name: "TheEvent", jsonDetails: "{}", actor: "a_user", version: 0, position: 0)
 
         guard let history = try store.history(forEntityWithId: "test") else { return XCTFail("No history returned") }
 
@@ -56,11 +51,10 @@ final class HistoryLoadTests: XCTestCase {
     }
 
     func test_convertsTimestampFromJulianDay() throws {
+        try database.insertEntity(id: "test", type: "TheType", version: 42)
         try database.execute("""
-            INSERT INTO Entities (id, type, version) VALUES
-                ('test', 'TheType', 42);
-            INSERT INTO Events (entity, name, details, actor, timestamp, version, position) VALUES
-                ('test', 'any', '{}', 'any', 2459683.17199667, 0, 0)
+            INSERT INTO Events (entityId, entityType, name, details, actor, timestamp, version, position) VALUES
+                ('test', 'TheType', 'any', '{}', 'any', 2459683.17199667, 0, 0)
             """
         )
 

@@ -40,6 +40,7 @@ public struct EventPublisher {
             for event in events {
                 try database.insertEvent(
                     entityId: entityId,
+                    entityType: entityType,
                     name: event.name,
                     jsonDetails: event.jsonDetails,
                     actor: actor,

@@ -34,10 +34,7 @@ public final class SQLiteEventRepository: EventRepository {
     }
 
     private func operation(clause: Clause? = nil, limit: String? = nil) throws -> Operation {
-        let baseQuery = """
-            SELECT Events.entity, Entities.type, Events.name, Events.details, Events.position FROM Events
-                JOIN Entities ON Events.entity = Entities.id
-            """
+        let baseQuery = "SELECT entityId, entityType, name, details, position FROM Events"
 
         let database = try Database(openFile: file)
         if let (position, op) = clause {
