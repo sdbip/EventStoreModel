@@ -18,7 +18,7 @@ public struct EntityStore {
 
     public func type(ofEntityWithId id: String) throws -> String? {
         let database = try Database(openFile: dbFile)
-        return try database.type(ofEntityWithId: id)
+        return try database.type(ofEntityRowWithId: id)
     }
 
     public func reconstitute<State: EntityState>(entityWithId id: String) throws -> Entity<State>? {
@@ -35,11 +35,11 @@ public struct EntityStore {
 private extension Database {
     func history(forEntityWithId entityId: String) throws -> History? {
         return try transaction {
-            guard let entity = try entity(withId: entityId) else { return nil }
-            let events = try allEvents(forEntityWithId: entityId).map {
+            guard let entityRow = try entityRow(withId: entityId) else { return nil }
+            let eventRows = try allEventRows(forEntityWithId: entityId).map {
                 PublishedEvent(name: $0.name, details: $0.details, actor: $0.actor, timestamp: $0.timestamp)
             }
-            return History(id: entity.id, type: entity.type, events: events, version: .eventCount(entity.version))
+            return History(id: entityRow.id, type: entityRow.type, events: eventRows, version: .eventCount(entityRow.version))
         }
     }
 }

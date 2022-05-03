@@ -24,21 +24,21 @@ public struct EventPublisher {
         let database = try Database(openFile: dbFile)
 
         try database.transaction {
-            let currentVersion = try database.version(ofEntityWithId: entityId)
+            let currentVersion = try database.version(ofEntityRowWithId: entityId)
             guard isExpectedVersion(currentVersion) != false else { throw SQLiteError.message("Concurrency Error") }
 
             if let currentVersion = currentVersion {
-                try database.updateVersion(ofEntityWithId: entityId, to: Int32(events.count) + currentVersion)
+                try database.setVersion(Int32(events.count) + currentVersion, onEntityRowWithId: entityId)
             } else {
-                try database.insertEntity(id: entityId, type: entityType, version: Int32(events.count))
+                try database.insertEntityRow(id: entityId, type: entityType, version: Int32(events.count))
             }
 
             var nextPosition = try database.nextPosition()
-            try database.setPosition(nextPosition + Int64(events.count))
+            try database.setNextPosition(nextPosition + Int64(events.count))
 
             var nextVersion = (currentVersion ?? -1) + 1
             for event in events {
-                try database.insertEvent(
+                try database.insertEventRow(
                     entityId: entityId,
                     entityType: entityType,
                     name: event.name,
