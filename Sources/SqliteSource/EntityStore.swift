@@ -28,18 +28,10 @@ public struct EntityStore {
 
     public func history(forEntityWithId id: String) throws -> History? {
         let database = try Database(openFile: dbFile)
-        return try database.history(forEntityWithId: id)
-    }
-}
-
-private extension Database {
-    func history(forEntityWithId entityId: String) throws -> History? {
-        return try transaction {
-            guard let entityRow = try entityRow(withId: entityId) else { return nil }
-            let eventRows = try allEventRows(forEntityWithId: entityId).map {
-                PublishedEvent(name: $0.name, details: $0.details, actor: $0.actor, timestamp: $0.timestamp)
-            }
-            return History(id: entityRow.id, type: entityRow.type, events: eventRows, version: .eventCount(entityRow.version))
+        guard let entityRow = try database.entityRow(withId: id) else { return nil }
+        let eventRows = try database.allEventRows(forEntityWithId: id).map {
+            PublishedEvent(name: $0.name, details: $0.details, actor: $0.actor, timestamp: $0.timestamp)
         }
+        return History(id: entityRow.id, type: entityRow.type, events: eventRows, version: .eventCount(entityRow.version))
     }
 }
