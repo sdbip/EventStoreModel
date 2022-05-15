@@ -3,7 +3,7 @@ import Source
 
 final class DetailsTests: XCTestCase {
     func test_writesCodableDetails() throws {
-        let counter = Entity<Counter>(id: "counter", version: .notSaved)
+        let counter = Entity<Counter>(id: "counter")
         counter.state.step(count: 10)
 
         XCTAssertEqual(counter.state.unpublishedEvents.count, 1)

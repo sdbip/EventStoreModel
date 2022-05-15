@@ -23,7 +23,7 @@ public struct Entity<StateType> where StateType: EntityState {
     /// reconstituted, plus any not yet persisted changes.
     public let state: StateType
 
-    public init(id: String, version: EntityVersion) {
+    public init(id: String, version: EntityVersion = .notSaved) {
         self.id = id
         self.version = version
 

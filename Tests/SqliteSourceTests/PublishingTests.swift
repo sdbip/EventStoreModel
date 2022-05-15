@@ -28,7 +28,7 @@ final class PublishingTests: XCTestCase {
     }
 
     func test_canPublishEntityWithoutEvents() throws {
-        let entity = Entity<TestEntity>(id: "test", version: .notSaved)
+        let entity = Entity<TestEntity>(id: "test")
         entity.state.unpublishedEvents = []
 
         let history = try history(afterPublishingChangesFor: entity, actor: "user_x")
@@ -39,7 +39,7 @@ final class PublishingTests: XCTestCase {
     }
 
     func test_canPublishSingleEvent() throws {
-        let entity = Entity<TestEntity>(id: "test", version: .notSaved)
+        let entity = Entity<TestEntity>(id: "test")
         entity.state.unpublishedEvents = [UnpublishedEvent(name: "AnEvent", details: "{}")!]
 
         let history = try history(afterPublishingChangesFor: entity, actor: "user_x")
@@ -51,7 +51,7 @@ final class PublishingTests: XCTestCase {
     }
 
     func test_versionMatchesNumberOfEvents() throws {
-        let entity = Entity<TestEntity>(id: "test", version: .notSaved)
+        let entity = Entity<TestEntity>(id: "test")
         entity.state.unpublishedEvents = [UnpublishedEvent(name: "AnEvent", details: "{}")!]
 
         let history = try history(afterPublishingChangesFor: entity, actor: "user_x")
@@ -60,7 +60,7 @@ final class PublishingTests: XCTestCase {
     }
 
     func test_canPublishMultipleEvents() throws {
-        let entity = Entity<TestEntity>(id: "test", version: .notSaved)
+        let entity = Entity<TestEntity>(id: "test")
         entity.state.unpublishedEvents = [
             UnpublishedEvent(name: "AnEvent", details: "{}")!,
             UnpublishedEvent(name: "AnEvent", details: "{}")!,
@@ -74,7 +74,7 @@ final class PublishingTests: XCTestCase {
     }
 
     func test_addsEventsExistingEntity() throws {
-        let existingEntity = Entity<TestEntity>(id: "test", version: .notSaved)
+        let existingEntity = Entity<TestEntity>(id: "test")
         try publisher.publishChanges(entity: existingEntity, actor: "any")
 
         let reconstitutedVersion = Entity<TestEntity>(id: "test", version: 0)
@@ -86,7 +86,7 @@ final class PublishingTests: XCTestCase {
     }
 
     func test_throwsIfVersionHasChanged() throws {
-        let existingEntity = Entity<TestEntity>(id: "test", version: .notSaved)
+        let existingEntity = Entity<TestEntity>(id: "test")
         existingEntity.state.unpublishedEvents = [UnpublishedEvent(name: "AnEvent", details: "{}")!]
         try publisher.publishChanges(entity: existingEntity, actor: "any")
 
@@ -97,7 +97,7 @@ final class PublishingTests: XCTestCase {
     }
 
     func test_updatesNextPosition() throws {
-        let existingEntity = Entity<TestEntity>(id: "test", version: .notSaved)
+        let existingEntity = Entity<TestEntity>(id: "test")
         existingEntity.state.unpublishedEvents = [UnpublishedEvent(name: "AnEvent", details: "{}")!]
         try publisher.publishChanges(entity: existingEntity, actor: "any")
 
