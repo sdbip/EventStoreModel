@@ -17,6 +17,9 @@ final class HistoryLoadTests: XCTestCase {
         let connection = try Connection(configuration: configuration)
         database = Database(connection: connection)
         try Schema.add(to: database)
+        try database.operation(#"DELETE FROM "Events""#).execute()
+        try database.operation(#"DELETE FROM "Entities""#).execute()
+        try database.operation(#"UPDATE "Properties" SET "value" = 0 WHERE "name" = 'next_position'"#).execute()
     }
 
     func test_canConnect() throws {
