@@ -1,6 +1,7 @@
 import Source
+import SQLite
 
-extension Database: EntityDatasource {
+extension Database: EntityStoreRepository {
     public func type(ofEntityRowWithId id: String) throws -> String? {
         return try operation("SELECT type FROM Entities WHERE id = 'test'")
             .single { $0.string(at: 0) }

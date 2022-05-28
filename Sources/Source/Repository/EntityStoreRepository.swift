@@ -1,4 +1,4 @@
-public protocol EntityDatasource {
+public protocol EntityStoreRepository {
     func type(ofEntityRowWithId id: String) throws -> String?
 
     func entityRow(withId id: String) throws -> EntityRow?

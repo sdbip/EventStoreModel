@@ -2,7 +2,6 @@ import XCTest
 
 import Source
 import SQLite
-import SQLiteSource
 
 private let testDBFile = "test.db"
 

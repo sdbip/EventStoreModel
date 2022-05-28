@@ -2,9 +2,9 @@ import SQLite3
 import XCTest
 
 import Projection
+import SQLite
 import SQLiteProjection
 import SQLiteSource
-import SQLite
 
 private let testDBFile = "test.db"
 

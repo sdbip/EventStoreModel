@@ -1,7 +1,5 @@
 import Foundation
 
-import Source
-
 public struct EventPublisher {
     private let repository: EventPublisherRepository
 

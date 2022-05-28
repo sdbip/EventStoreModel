@@ -1,4 +1,5 @@
 import Source
+import SQLite
 
 extension Database: EventPublisherRepository {
     public func transaction<T>(do block: () throws -> T) throws -> T {

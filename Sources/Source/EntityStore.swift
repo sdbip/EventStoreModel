@@ -1,11 +1,9 @@
 import Foundation
 
-import Source
-
 public struct EntityStore {
-    private let repository: EntityDatasource
+    private let repository: EntityStoreRepository
 
-    public init(repository: EntityDatasource) {
+    public init(repository: EntityStoreRepository) {
         self.repository = repository
     }
 

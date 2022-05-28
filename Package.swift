@@ -19,15 +19,22 @@ let package = Package(
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
-            name: "SQLite",
-            dependencies: [],
-            resources: [.process("Schema+Ops/schema.sql")]),
-        .target(
             name: "Source",
             dependencies: []),
         .testTarget(
             name: "SourceTests",
             dependencies: ["Source"]),
+        .target(
+            name: "Projection",
+            dependencies: []),
+        .testTarget(
+            name: "ProjectionTests",
+            dependencies: ["Projection"]),
+        
+        .target(
+            name: "SQLite",
+            dependencies: [],
+            resources: [.process("Schema+Ops/schema.sql")]),
         .target(
             name: "SQLiteSource",
             dependencies: ["Source", "SQLite"]),
@@ -35,16 +42,11 @@ let package = Package(
             name: "SQLiteSourceTests",
             dependencies: ["SQLiteSource"]),
         .target(
-            name: "Projection",
-            dependencies: []),
-        .testTarget(
-            name: "ProjectionTests",
-            dependencies: ["Projection"]),
-        .target(
             name: "SQLiteProjection",
             dependencies: ["Projection", "SQLite"]),
         .testTarget(
             name: "SQLiteProjectionTests",
             dependencies: ["SQLiteProjection", "SQLiteSource"]),
+        
     ]
 )
