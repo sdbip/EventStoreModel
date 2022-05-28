@@ -12,6 +12,14 @@ final class HistoryLoadTests: XCTestCase {
         XCTAssertEqual(try operation.single { try $0[0].int() }, 1)
     }
 
+    func test_canUseParameters() throws {
+        let connection = try Connection(configuration: configuration)
+        let database = Database(connection: connection)
+        let operation = try database.operation("SELECT $1", parameters: 1)
+
+        XCTAssertEqual(try operation.single { try $0[0].int() }, 1)
+    }
+
     var configuration: ConnectionConfiguration {
         var config = ConnectionConfiguration()
         config.host = "localhost"
