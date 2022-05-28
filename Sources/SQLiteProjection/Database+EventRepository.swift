@@ -7,10 +7,6 @@ extension Database: EventRepository {
             SELECT "entityId", "entityType", "name", "details", "position" FROM "Events" WHERE "position" > $1 LIMIT \(maxCount)
             """,
             position ?? -1)
-        return try events(from: operation)
-    }
-
-    private func events(from operation: Operation) throws -> [Event] {
         return try operation.query {
             guard let entityId = $0.string(at: 0),
                   let type = $0.string(at: 1),
