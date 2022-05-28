@@ -1,11 +1,13 @@
 import XCTest
 
+import Postgres
 import PostgresClientKit
 
 final class HistoryLoadTests: XCTestCase {
     func test_canConnect() throws {
         let connection = try Connection(configuration: configuration)
-        let statement = try connection.prepareStatement(text: "SELECT 1")
+        let database = Database(connection: connection)
+        let statement = try database.connection.prepareStatement(text: "SELECT 1")
         let x = try statement.execute()
             .map { try $0.get().columns[0].int() }
             .first
