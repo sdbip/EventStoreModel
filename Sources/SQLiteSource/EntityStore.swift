@@ -11,10 +11,6 @@ public struct EntityStore {
         self.repository = repository
     }
 
-    public func nextPosition() throws -> Int64 {
-        return try repository.nextPosition()
-    }
-
     public func type(ofEntityWithId id: String) throws -> String? {
         return try repository.type(ofEntityRowWithId: id)
     }

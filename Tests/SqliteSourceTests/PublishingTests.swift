@@ -9,12 +9,13 @@ private let testDBFile = "test.db"
 final class PublishingTests: XCTestCase {
     var publisher: EventPublisher!
     var entityStore: EntityStore!
+    var database: Database!
 
     override func setUp() {
         _ = try? FileManager.default.removeItem(atPath: testDBFile)
 
         do {
-            let database = try Database(openFile: testDBFile)
+            database = try Database(openFile: testDBFile)
             publisher = EventPublisher(repository: database)
             entityStore = EntityStore(repository: database)
 
@@ -111,7 +112,7 @@ final class PublishingTests: XCTestCase {
 
         try publisher.publishChanges(entity: entity, actor: "user_x")
 
-        XCTAssertEqual(try entityStore.nextPosition(), 4)
+        XCTAssertEqual(try database.nextPosition(), 4)
         XCTAssertEqual(try maxPositionOfEvents(forEntityWithId: "test"), 3)
     }
 
@@ -121,7 +122,6 @@ final class PublishingTests: XCTestCase {
     }
 
     private func maxPositionOfEvents(forEntityWithId id: String) throws -> Int64? {
-        let database = try Database(openFile: testDBFile)
         return try database.operation(
             "SELECT MAX(position) FROM Events WHERE entityId = 'test'"
         ).single { $0.int64(at: 0) }
