@@ -5,6 +5,9 @@ import PackageDescription
 
 let package = Package(
     name: "EventStore",
+    platforms: [
+        .macOS(.v11)
+    ],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
@@ -14,6 +17,7 @@ let package = Package(
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         // .package(url: /* package url */, from: "1.0.0"),
+        .package(url: "https://github.com/codewinsdotcom/PostgresClientKit", from: "1.0.0"),
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -30,7 +34,24 @@ let package = Package(
         .testTarget(
             name: "ProjectionTests",
             dependencies: ["Projection"]),
-        
+
+        .target(
+            name: "Postgres",
+            dependencies: ["PostgresClientKit"],
+            resources: [.process("Schema/schema.sql")]),
+        .target(
+            name: "PostgresSource",
+            dependencies: ["Source", "Postgres"]),
+        .testTarget(
+            name: "PostgresSourceTests",
+            dependencies: ["PostgresSource"]),
+        .target(
+            name: "PostgresProjection",
+            dependencies: ["Projection", "Postgres"]),
+        .testTarget(
+            name: "PostgresProjectionTests",
+            dependencies: ["PostgresProjection", "PostgresSource"]),
+
         .target(
             name: "SQLite",
             dependencies: [],
@@ -47,6 +68,6 @@ let package = Package(
         .testTarget(
             name: "SQLiteProjectionTests",
             dependencies: ["SQLiteProjection", "SQLiteSource"]),
-        
+
     ]
 )

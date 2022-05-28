@@ -10,14 +10,14 @@ CREATE TABLE IF NOT EXISTS "Events" (
     "name" TEXT NOT NULL,
     "details" TEXT NOT NULL,
     "actor" TEXT NOT NULL,
-    "timestamp" REAL NOT NULL DEFAULT (julianday('now', 'utc')),
+    "timestamp" REAL NOT NULL DEFAULT (extract(julian from current_timestamp at time zone 'UTC')),
     "version" INT NOT NULL,
     "position" BIGINT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS "Properties" (
     "name" TEXT NOT NULL,
-    "value" DATA NOT NULL
+    "value" TEXT NOT NULL
 );
 
 INSERT INTO "Properties" ("name", "value") SELECT 'next_position', 0
