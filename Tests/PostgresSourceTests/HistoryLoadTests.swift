@@ -2,30 +2,29 @@ import XCTest
 
 import Postgres
 import PostgresClientKit
+import Source
 
 final class HistoryLoadTests: XCTestCase {
-    func test_canConnect() throws {
+    var database: Database!
+
+    override func setUp() async throws {
         let connection = try Connection(configuration: configuration)
-        let database = Database(connection: connection)
+        database = Database(connection: connection)
+        try Schema.add(to: database)
+    }
+
+    func test_canConnect() throws {
         let operation = try database.operation("SELECT 1")
 
         XCTAssertEqual(try operation.single { try $0[0].int() }, 1)
     }
 
     func test_canUseParameters() throws {
-        let connection = try Connection(configuration: configuration)
-        let database = Database(connection: connection)
         let operation = try database.operation("SELECT $1", parameters: 1)
 
         XCTAssertEqual(try operation.single { try $0[0].int() }, 1)
     }
     
-    func test_canAddSchema() throws {
-        let connection = try Connection(configuration: configuration)
-        let database = Database(connection: connection)
-        try Schema.add(to: database)
-    }
-
     var configuration: ConnectionConfiguration {
         var config = ConnectionConfiguration()
         config.host = "localhost"
