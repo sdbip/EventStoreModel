@@ -4,10 +4,10 @@ import Source
 import SQLite
 
 public struct EventPublisher {
-    private let dbFile: String
+    private let repository: Database
 
-    public init(dbFile: String) {
-        self.dbFile = dbFile
+    public init(repository: Database) {
+        self.repository = repository
     }
 
     public func publishChanges<State>(entity: Entity<State>, actor: String) throws where State: EntityState {
@@ -21,24 +21,22 @@ public struct EventPublisher {
     }
 
     private func publish(events: [UnpublishedEvent], entityId: String, entityType: String, actor: String, isExpectedVersion: (Int32?) -> Bool) throws {
-        let database = try Database(openFile: dbFile)
-
-        try database.transaction {
-            let currentVersion = try database.version(ofEntityRowWithId: entityId)
+        try repository.transaction {
+            let currentVersion = try repository.version(ofEntityRowWithId: entityId)
             guard isExpectedVersion(currentVersion) != false else { throw SQLiteError.message("Concurrency Error") }
 
             if let currentVersion = currentVersion {
-                try database.setVersion(Int32(events.count) + currentVersion, onEntityRowWithId: entityId)
+                try repository.setVersion(Int32(events.count) + currentVersion, onEntityRowWithId: entityId)
             } else {
-                try database.insertEntityRow(id: entityId, type: entityType, version: Int32(events.count))
+                try repository.insertEntityRow(id: entityId, type: entityType, version: Int32(events.count))
             }
 
-            var nextPosition = try database.nextPosition()
-            try database.setNextPosition(nextPosition + Int64(events.count))
+            var nextPosition = try repository.nextPosition()
+            try repository.setNextPosition(nextPosition + Int64(events.count))
 
             var nextVersion = (currentVersion ?? -1) + 1
             for event in events {
-                try database.insertEventRow(
+                try repository.insertEventRow(
                     entityId: entityId,
                     entityType: entityType,
                     name: event.name,

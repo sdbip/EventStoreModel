@@ -14,8 +14,9 @@ final class PublishingTests: XCTestCase {
         _ = try? FileManager.default.removeItem(atPath: testDBFile)
 
         do {
-            publisher = EventPublisher(dbFile: testDBFile)
-            entityStore = EntityStore(dbFile: testDBFile)
+            let database = try Database(openFile: testDBFile)
+            publisher = EventPublisher(repository: database)
+            entityStore = EntityStore(repository: database)
 
             try Schema.add(to: testDBFile)
         } catch {

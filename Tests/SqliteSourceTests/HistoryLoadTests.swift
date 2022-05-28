@@ -15,8 +15,8 @@ final class HistoryLoadTests: XCTestCase {
         _ = try? FileManager.default.removeItem(atPath: testDBFile)
 
         do {
-            store = EntityStore(dbFile: testDBFile)
             database = try Database(openFile: testDBFile)
+            store = EntityStore(repository: database)
 
             try Schema.add(to: testDBFile)
         } catch {
