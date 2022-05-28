@@ -34,7 +34,7 @@ let package = Package(
         .target(
             name: "SQLite",
             dependencies: [],
-            resources: [.process("Schema+Ops/schema.sql")]),
+            resources: [.process("Schema/schema.sql")]),
         .target(
             name: "SQLiteSource",
             dependencies: ["Source", "SQLite"]),
