@@ -7,11 +7,11 @@ public final class Database {
         self.connection = connection
     }
 
-    public func operation(_ sql: String, parameters: Int...) throws -> Operation {
+    public func operation(_ sql: String, parameters: PostgresValueConvertible?...) throws -> Operation {
         return try operation(sql, parameters: parameters)
     }
 
-    public func operation(_ sql: String, parameters: [Int] = []) throws -> Operation {
+    public func operation(_ sql: String, parameters: [PostgresValueConvertible?] = []) throws -> Operation {
         return try Operation(sql: sql, connection: connection, parameters: parameters)
     }
 }
