@@ -10,7 +10,7 @@ public struct Operation {
     }
     
     public func execute() throws {
-        try statement.execute()
+        try statement.execute(parameterValues: parameters, retrieveColumnMetadata: false)
     }
     
     public func query<T>(convert: ([PostgresValue]) throws -> T) throws -> [T] {
