@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS "Events" (
     "name" TEXT NOT NULL,
     "details" TEXT NOT NULL,
     "actor" TEXT NOT NULL,
-    "timestamp" REAL NOT NULL DEFAULT (extract(julian from current_timestamp at time zone 'UTC')),
+    "timestamp" DECIMAL(14,7) NOT NULL DEFAULT (extract(julian from current_timestamp at time zone 'UTC')),
     "version" INT NOT NULL,
     "position" BIGINT NOT NULL
 );

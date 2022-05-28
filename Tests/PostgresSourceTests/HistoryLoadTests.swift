@@ -1,10 +1,12 @@
 import XCTest
+import PostgresClientKit
 
 import Postgres
-import PostgresClientKit
+import PostgresSource
 import Source
 
 final class HistoryLoadTests: XCTestCase {
+    var store: EntityStore!
     var database: Database!
 
     override func setUp() async throws {
@@ -20,20 +22,56 @@ final class HistoryLoadTests: XCTestCase {
         try database.operation(#"DELETE FROM "Events""#).execute()
         try database.operation(#"DELETE FROM "Entities""#).execute()
         try database.operation(#"UPDATE "Properties" SET "value" = 0 WHERE "name" = 'next_position'"#).execute()
-    }
-
-    func test_canConnect() throws {
-        let operation = try database.operation("SELECT 1")
-
-        XCTAssertEqual(try operation.single { try $0[0].int() }, 1)
-    }
-
-    func test_canUseParameters() throws {
-        let operation = try database.operation("SELECT $1", parameters: 1)
-
-        XCTAssertEqual(try operation.single { try $0[0].int() }, 1)
+        
+        store = EntityStore(repository: database)
     }
     
+    func test_fetchesEntityData() throws {
+        try database.operation(#"INSERT INTO "Entities" ("id", "type", "version") VALUES ('test', 'TheType', 42)"#).execute()
+
+        let history = try store.history(forEntityWithId: "test")
+        XCTAssertEqual(history?.type, "TheType")
+        XCTAssertEqual(history?.version, 42)
+    }
+
+    func test_fetchesEventData() throws {
+        try database.operation(#"INSERT INTO "Entities" ("id", "type", "version") VALUES ('test', 'TheType', 42)"#).execute()
+        try database.operation("""
+            INSERT INTO "Events" ("entityId", "entityType", "name", "details", "actor", "version", "position") VALUES
+                ('test', 'TheType', 'TheEvent', '{}', 'a_user', 0, 0)
+            """
+        ).execute()
+
+        guard let history = try store.history(forEntityWithId: "test") else { return XCTFail("No history returned") }
+
+        XCTAssertEqual(history.events.count, 1)
+
+        XCTAssertEqual(history.events[0].name, "TheEvent")
+        XCTAssertEqual(history.events[0].jsonDetails, "{}")
+        XCTAssertEqual(history.events[0].actor, "a_user")
+    }
+
+    func test_convertsTimestampFromJulianDay() throws {
+        try database.operation(#"INSERT INTO "Entities" ("id", "type", "version") VALUES ('test', 'TheType', 42)"#).execute()
+        try database.operation("""
+            INSERT INTO "Events" ("entityId", "entityType", "name", "details", "actor", "timestamp", "version", "position") VALUES
+                ('test', 'TheType', 'any', '{}', 'any', 2459683.17199667, 0, 0)
+            """
+        ).execute()
+
+        guard let history = try store.history(forEntityWithId: "test") else { return XCTFail("No history returned") }
+        guard let event = history.events.first else { return XCTFail("No event returned")}
+
+        XCTAssertEqual("\(formatWithMilliseconds(date: event.timestamp))", "2022-04-13 16:07:40.515 +0000")
+    }
+
+    private func formatWithMilliseconds(date: Date) -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
+        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS Z"
+        return dateFormatter.string(from: date)
+    }
+
     var configuration: ConnectionConfiguration {
         var config = ConnectionConfiguration()
         config.host = "localhost"

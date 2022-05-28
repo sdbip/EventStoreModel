@@ -1,5 +1,3 @@
-import Foundation
-
 public struct EntityData {
     public let id: String
     public let type: String
@@ -15,9 +13,9 @@ public struct EventRow {
     public let name: String
     public let details: String
     public let actor: String
-    public let timestamp: Date
+    public let timestamp: Double
 
-    public init(entity: EntityData, name: String, details: String, actor: String, timestamp: Date) {
+    public init(entity: EntityData, name: String, details: String, actor: String, timestamp: Double) {
         self.entity = entity
         self.name = name
         self.details = details

@@ -13,6 +13,11 @@ public struct Operation {
         try statement.execute()
     }
     
+    public func query<T>(convert: ([PostgresValue]) throws -> T) throws -> [T] {
+        try statement.execute(parameterValues: parameters, retrieveColumnMetadata: false)
+            .map { try convert($0.get().columns) }
+    }
+    
     public func single<T>(convert: ([PostgresValue]) throws -> T) throws -> T? {
         try statement.execute(parameterValues: parameters, retrieveColumnMetadata: false)
             .map { try convert($0.get().columns) }

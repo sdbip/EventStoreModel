@@ -30,7 +30,7 @@ final class HistoryLoadTests: XCTestCase {
     }
 
     func test_fetchesEntityData() throws {
-        try database.execute("INSERT INTO Entities (id, type, version) VALUES ('test', 'TheType', 42)")
+        try database.insertEntityRow(id: "test", type: "TheType", version: 42)
 
         let history = try store.history(forEntityWithId: "test")
         XCTAssertEqual(history?.type, "TheType")
