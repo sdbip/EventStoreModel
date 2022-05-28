@@ -8,6 +8,12 @@ final class HistoryLoadTests: XCTestCase {
     var database: Database!
 
     override func setUp() async throws {
+        var noDbConfig = configuration
+        noDbConfig.database = ""
+        
+        let noDb = Database(connection: try Connection(configuration: noDbConfig))
+        try? noDb.operation("CREATE DATABASE \(configuration.database)").execute()
+
         let connection = try Connection(configuration: configuration)
         database = Database(connection: connection)
         try Schema.add(to: database)
