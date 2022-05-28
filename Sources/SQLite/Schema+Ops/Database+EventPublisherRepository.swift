@@ -1,6 +1,18 @@
 import Source
 
-extension Database: EventDatasource {
+extension Database: EventPublisherRepository {
+    public func transaction<T>(do block: () throws -> T) throws -> T {
+        try operation("BEGIN").execute()
+        do {
+            let result = try block()
+            try operation("COMMIT").execute()
+            return result
+        } catch {
+            try operation("ROLLBACK").execute()
+            throw error
+        }
+    }
+
     public func insertEntityRow(id: String, type: String, version: Int32) throws {
         try operation("INSERT INTO Entities (id, type, version) VALUES (?, ?, ?)", id, type, version)
             .execute()

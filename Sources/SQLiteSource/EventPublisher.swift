@@ -1,12 +1,11 @@
 import Foundation
 
 import Source
-import SQLite
 
 public struct EventPublisher {
-    private let repository: Database
+    private let repository: EventPublisherRepository
 
-    public init(repository: Database) {
+    public init(repository: EventPublisherRepository) {
         self.repository = repository
     }
 
@@ -23,7 +22,7 @@ public struct EventPublisher {
     private func publish(events: [UnpublishedEvent], entityId: String, entityType: String, actor: String, isExpectedVersion: (Int32?) -> Bool) throws {
         try repository.transaction {
             let currentVersion = try repository.version(ofEntityRowWithId: entityId)
-            guard isExpectedVersion(currentVersion) != false else { throw SQLiteError.message("Concurrency Error") }
+            guard isExpectedVersion(currentVersion) != false else { throw DomainError.concurrentUpdate }
 
             if let currentVersion = currentVersion {
                 try repository.setVersion(Int32(events.count) + currentVersion, onEntityRowWithId: entityId)
@@ -49,4 +48,8 @@ public struct EventPublisher {
             }
         }
     }
+}
+
+public enum DomainError: Error {
+    case concurrentUpdate
 }

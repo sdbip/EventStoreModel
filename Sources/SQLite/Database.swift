@@ -15,18 +15,6 @@ public class Database {
         return try Operation(database: self, sql: sql, parameters)
     }
 
-    public func transaction<T>(do block: () throws -> T) rethrows -> T {
-        sqlite3_exec(connection, "BEGIN", nil, nil, nil)
-        do {
-            let result = try block()
-            sqlite3_exec(connection, "COMMIT", nil, nil, nil)
-            return result
-        } catch {
-            sqlite3_exec(connection, "ROLLBACK", nil, nil, nil)
-            throw error
-        }
-    }
-
     public func execute(_ statement: String) throws {
         if sqlite3_exec(connection, statement, nil, nil, nil) != SQLITE_OK {
             throw lastError()

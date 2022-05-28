@@ -1,4 +1,6 @@
-public protocol EventDatasource {
+public protocol EventPublisherRepository {
+    func transaction<T>(do block: () throws -> T) throws -> T
+
     func insertEntityRow(id: String, type: String, version: Int32) throws
 
     func insertEventRow(entityId: String, entityType: String, name: String, jsonDetails: String, actor: String, version: Int32, position: Int64) throws
