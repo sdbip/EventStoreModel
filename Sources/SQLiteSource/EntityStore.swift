@@ -1,13 +1,11 @@
 import Foundation
-import SQLite3
 
 import Source
-import SQLite
 
 public struct EntityStore {
-    private let repository: Database
+    private let repository: EntityDatasource
 
-    public init(repository: Database) {
+    public init(repository: EntityDatasource) {
         self.repository = repository
     }
 

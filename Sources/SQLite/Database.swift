@@ -1,6 +1,6 @@
 import SQLite3
 
-public struct Database {
+public class Database {
     let connection: OpaquePointer
 
     public init(openFile file: String) throws {
