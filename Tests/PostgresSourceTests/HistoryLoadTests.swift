@@ -19,6 +19,12 @@ final class HistoryLoadTests: XCTestCase {
 
         XCTAssertEqual(try operation.single { try $0[0].int() }, 1)
     }
+    
+    func test_canAddSchema() throws {
+        let connection = try Connection(configuration: configuration)
+        let database = Database(connection: connection)
+        try Schema.add(to: database)
+    }
 
     var configuration: ConnectionConfiguration {
         var config = ConnectionConfiguration()
