@@ -7,12 +7,9 @@ final class HistoryLoadTests: XCTestCase {
     func test_canConnect() throws {
         let connection = try Connection(configuration: configuration)
         let database = Database(connection: connection)
-        let statement = try database.connection.prepareStatement(text: "SELECT 1")
-        let x = try statement.execute()
-            .map { try $0.get().columns[0].int() }
-            .first
+        let operation = try database.operation("SELECT 1")
 
-        XCTAssertEqual(x, 1)
+        XCTAssertEqual(try operation.single { try $0[0].int() }, 1)
     }
 
     var configuration: ConnectionConfiguration {
