@@ -12,31 +12,6 @@ final class PostgresEventRepositoryTests: XCTestCase {
         database = try setUpEmptyTestDatabase()
     }
 
-    func test_readEventsAt_returnsEvents() throws {
-        try database.insertEventRow(entityId: "entity", entityType: "type", name: "name", jsonDetails: "{}", actor: "actor", version: 1, position: 1)
-
-        let events = try database.readEvents(at: 1)
-
-        XCTAssertEqual(events,
-            [Event(
-                entity: Entity(id: "entity", type: "type"),
-                name: "name",
-                details: "{}",
-                position: 1
-            )])
-    }
-
-    func test_readEventsAt_returnsOnlyEventsAtTheIndicatedPosition() throws {
-        try database.insertEventRow(entityId: "entity", entityType: "type", name: "name", jsonDetails: "{}", actor: "actor", version: 0, position: 0)
-        try database.insertEventRow(entityId: "entity", entityType: "type", name: "name", jsonDetails: "{}", actor: "actor", version: 1, position: 1)
-        try database.insertEventRow(entityId: "entity", entityType: "type", name: "name", jsonDetails: "{}", actor: "actor", version: 2, position: 2)
-
-        let events = try database.readEvents(at: 1)
-
-        XCTAssert(events.allSatisfy({ $0.position == 1 }))
-
-    }
-
     func test_readEventsAfter_returnsEvents() throws {
         try database.insertEventRow(entityId: "entity", entityType: "type", name: "name", jsonDetails: "{}", actor: "actor", version: 1, position: 1)
 

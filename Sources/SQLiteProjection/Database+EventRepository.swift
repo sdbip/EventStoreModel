@@ -10,14 +10,6 @@ extension Database: EventRepository {
         return try events(from: operation)
     }
 
-    public func readEvents(at position: Int64) throws -> [Event] {
-        let operation = try operation("""
-            SELECT "entityId", "entityType", "name", "details", "position" FROM "Events" WHERE "position" = $1
-            """,
-            position)
-        return try events(from: operation)
-    }
-
     private func events(from operation: Operation) throws -> [Event] {
         return try operation.query {
             guard let entityId = $0.string(at: 0),
