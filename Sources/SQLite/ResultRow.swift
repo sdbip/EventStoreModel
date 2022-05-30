@@ -24,16 +24,4 @@ public struct ResultRow {
         guard let value = sqlite3_column_text(pointer, column) else { return nil }
         return String(cString: value)
     }
-
-    public func date(at column: Int32) -> Date {
-        let julianDay = double(at: column)
-        let timeInterval = (julianDay - julianDayAtReferenceDate) * secondsPerDay
-        return Date(timeIntervalSinceReferenceDate: timeInterval)
-    }
 }
-
-// Swift reference date is January 1, 2001 CE @ 0:00:00
-// Julian Day 0 is November 24, 4714 BCE @ 12:00:00
-// Those dates are 2451910.5 days apart.
-private let julianDayAtReferenceDate = 2451910.5
-private let secondsPerDay = 86_400 as Double

@@ -1,31 +1,18 @@
+import PostgresClientKit
 import XCTest
 
+import Postgres
 import Source
-import SQLite
-
-private let testDBFile = "test.db"
 
 final class PublishingTests: XCTestCase {
     var publisher: EventPublisher!
     var entityStore: EntityStore!
     var database: Database!
-
-    override func setUp() {
-        _ = try? FileManager.default.removeItem(atPath: testDBFile)
-
-        do {
-            database = try Database(openFile: testDBFile)
-            publisher = EventPublisher(repository: database)
-            entityStore = EntityStore(repository: database)
-
-            try Schema.add(to: testDBFile)
-        } catch {
-            XCTFail("\(error)")
-        }
-    }
-
-    override func tearDown() {
-        _ = try? FileManager.default.removeItem(atPath: testDBFile)
+    
+    override func setUp() async throws {
+        database = try setUpEmptyTestDatabase()
+        publisher = EventPublisher(repository: database)
+        entityStore = EntityStore(repository: database)
     }
 
     func test_canPublishEntityWithoutEvents() throws {
@@ -91,7 +78,7 @@ final class PublishingTests: XCTestCase {
         existingEntity.state.unpublishedEvents = [UnpublishedEvent(name: "AnEvent", details: "{}")!]
         try publisher.publishChanges(entity: existingEntity, actor: "any")
 
-        let reconstitutedVersion = Entity(id: "test", state: TestEntity(), version: .eventCount(0))
+        let reconstitutedVersion = Entity(id: "test", state: TestEntity(), version: 0)
         reconstitutedVersion.state.unpublishedEvents.append(UnpublishedEvent(name: "AnEvent", details: "{}")!)
 
         XCTAssertThrowsError(try publisher.publishChanges(entity: reconstitutedVersion, actor: "user_x"))
@@ -122,8 +109,8 @@ final class PublishingTests: XCTestCase {
 
     private func maxPositionOfEvents(forEntityWithId id: String) throws -> Int64? {
         return try database.operation(
-            "SELECT MAX(position) FROM Events WHERE entityId = 'test'"
-        ).single { $0.int64(at: 0) }
+            #"SELECT MAX(position) FROM "Events" WHERE "entityId" = 'test'"#
+        ).single { try Int64($0[0].int()) }
     }
 }
 
@@ -131,7 +118,8 @@ final class TestEntity: EntityState {
     static let typeId = "TestEntity"
 
     var unpublishedEvents: [UnpublishedEvent] = []
-    
+
     init() {}
     init(events: [PublishedEvent]) {}
 }
+

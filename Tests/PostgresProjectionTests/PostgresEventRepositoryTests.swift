@@ -1,32 +1,15 @@
-import SQLite3
 import XCTest
 
+import Postgres
+import PostgresProjection
+import PostgresSource
 import Projection
-import SQLite
-import SQLiteProjection
-import SQLiteSource
 
-private let testDBFile = "test.db"
-
-final class SQLiteEventRepositoryTests: XCTestCase {
+final class PostgresEventRepositoryTests: XCTestCase {
     var database: Database!
 
-    override func setUp() {
-        _ = try? FileManager.default.removeItem(atPath: testDBFile)
-
-        do {
-            database = try Database(openFile: testDBFile)
-
-            try Schema.add(to: testDBFile)
-            try database.insertEntityRow(id: "entity", type: "type", version: 0)
-        } catch {
-            XCTFail("\(error)")
-        }
-    }
-
-    override func tearDown() {
-        _ = try? database.close()
-        _ = try? FileManager.default.removeItem(atPath: testDBFile)
+    override func setUp() async throws {
+        database = try setUpEmptyTestDatabase()
     }
 
     func test_readEventsAfter_returnsEvents() throws {

@@ -3,7 +3,7 @@ import Source
 
 final class DetailsTests: XCTestCase {
     func test_writesCodableDetails() throws {
-        let counter = Entity<Counter>(id: "counter")
+        let counter = Entity(id: "counter", state: Counter())
         counter.state.step(count: 10)
 
         XCTAssertEqual(counter.state.unpublishedEvents.count, 1)
@@ -29,7 +29,7 @@ final class DetailsTests: XCTestCase {
     }
 }
 
-final class Counter: EntityState {
+final class Counter {
     static let typeId = "Counter"
     var unpublishedEvents: [UnpublishedEvent] = []
     var currentValue = 0
@@ -37,8 +37,13 @@ final class Counter: EntityState {
     func step(count: Int) {
         unpublishedEvents.append(try! UnpublishedEvent(name: "DidStep", encodableDetails: DidStepDetails(count: count)))
     }
+}
 
-    func replay(_ event: PublishedEvent) {
+extension Counter: EntityState {
+    convenience init(events: [PublishedEvent]) {
+        self.init()
+
+        let event = events[0]
         if event.name == "DidStep", let details = try? event.details(as: DidStepDetails.self) {
             currentValue += details.count
         }

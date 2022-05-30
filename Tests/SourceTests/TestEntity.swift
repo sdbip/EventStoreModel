@@ -4,9 +4,9 @@ import Source
 final class TestEntity: EntityState {
     static let typeId = "TestEntity"
     let unpublishedEvents: [UnpublishedEvent] = []
-    var lastReconstitutedEvent: PublishedEvent?
+    var reconstitutedEvents: [PublishedEvent]?
 
-    func replay(_ event: PublishedEvent) {
-        lastReconstitutedEvent = event
+    init(events: [PublishedEvent]) {
+        reconstitutedEvents = events
     }
 }

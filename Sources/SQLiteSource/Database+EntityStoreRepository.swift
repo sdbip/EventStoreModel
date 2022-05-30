@@ -23,7 +23,7 @@ extension Database: EntityStoreRepository {
                 guard let details = $0.string(at: 2) else { throw SQLiteError.message("Event has no details") }
                 guard let actor = $0.string(at: 3) else { throw SQLiteError.message("Event has no actor") }
                 let entity = EntityData(id: entityId, type: type)
-                return EventRow(entity: entity, name: name, details: details, actor: actor, timestamp: $0.date(at: 4))
+                return EventRow(entity: entity, name: name, details: details, actor: actor, timestamp: $0.double(at: 4))
             }
     }
 }

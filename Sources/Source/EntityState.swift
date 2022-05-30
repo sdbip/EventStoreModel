@@ -12,11 +12,9 @@ public protocol EntityState: AnyObject {
     /// entity was reconstituted.
     var unpublishedEvents: [UnpublishedEvent] { get }
 
-    init()
-
     /// Replays a published event to update the current state of the entity, so
     /// that the correct behaviour can be enforced. This can be ignored if the
     /// entity's behaviour is not affected by the change.
-    func replay(_ event: PublishedEvent)
+    init(events: [PublishedEvent])
 
 }
