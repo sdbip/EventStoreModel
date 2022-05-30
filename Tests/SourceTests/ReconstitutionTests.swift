@@ -13,7 +13,7 @@ final class ReconstitutionTests: XCTestCase {
         let entity: Entity<TestEntity> = try history.entity()
 
         XCTAssertNotNil(entity)
-        XCTAssertEqual(entity.state.lastReconstitutedEvent?.name, "test")
+        XCTAssertEqual(entity.state.reconstitutedEvents?.first?.name, "test")
     }
 
     func test_setsVersion() throws {
