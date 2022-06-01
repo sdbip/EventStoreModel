@@ -5,26 +5,10 @@ import Postgres
 import PostgresSource
 import Source
 
-var configuration: ConnectionConfiguration {
-    var config = ConnectionConfiguration()
-    config.host = "localhost"
-    config.port = 5432
-    config.ssl = false
-
-    if let database = ProcessInfo.processInfo.environment["POSTGRES_TEST_DATABASE"] {
-        config.database = database
-    }
-
-    if let user = ProcessInfo.processInfo.environment["POSTGRES_TEST_USER"] {
-        config.user = user
-    }
-
-    if let password = ProcessInfo.processInfo.environment["POSTGRES_TEST_PASS"] {
-        config.credential = Credential.cleartextPassword(password: password)
-    }
-
-    return config
-}
+let host = Host("localhost", useSSL: false)
+let databaseName = ProcessInfo.processInfo.environment["POSTGRES_TEST_DATABASE"]!
+let username = ProcessInfo.processInfo.environment["POSTGRES_TEST_USER"]!
+let password = ProcessInfo.processInfo.environment["POSTGRES_TEST_PASS"]
 
 var database: Database!
 
@@ -32,8 +16,7 @@ public func setUpEmptyTestDatabase() throws -> Database {
     if database == nil {
         try createTestDatabase()
 
-        let connection = try Connection(configuration: configuration)
-        database = Database(connection: connection)
+        database = try Database.connect(host: host, database: databaseName, username: username, password: password)
     }
 
     try Schema.add(to: database)
@@ -45,10 +28,6 @@ public func setUpEmptyTestDatabase() throws -> Database {
 }
 
 private func createTestDatabase() throws {
-    var noDbConfig = configuration
-    noDbConfig.database = ""
-
-    let connection = try Connection(configuration: noDbConfig)
-    let noDb = Database(connection: connection)
-    try? noDb.operation("CREATE DATABASE \(configuration.database)").execute()
+    let noDb = try Database.connect(host: host, database: "", username: username, password: password)
+    try? noDb.operation("CREATE DATABASE \(databaseName)").execute()
 }
