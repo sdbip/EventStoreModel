@@ -5,9 +5,9 @@ public struct Host {
     let port: Int
     let useSSL: Bool
 
-    public init(_ host: String, port: Int = 5432, useSSL: Bool = true) {
+    public init(_ host: String, port: Int? = nil, useSSL: Bool = true) {
         self.host = host
-        self.port = port
+        self.port = port ?? 5432
         self.useSSL = useSSL
     }
 }
