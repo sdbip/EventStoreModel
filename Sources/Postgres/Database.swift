@@ -1,14 +1,26 @@
 import PostgresClientKit
 
 public struct Host {
-    let host: String
-    let port: Int
-    let useSSL: Bool
+    public var host: String
+    public var port: Int
+    public var database: String?
+    public var useSSL: Bool
 
-    public init(_ host: String, port: Int? = nil, useSSL: Bool = true) {
+    public init(_ host: String, port: Int? = nil, database: String? = nil, useSSL: Bool = true) {
         self.host = host
         self.port = port ?? 5432
+        self.database = database
         self.useSSL = useSSL
+    }
+}
+
+public struct Credentials {
+    public var username: String
+    public var password: String?
+    
+    public init(username: String, password: String? = nil) {
+        self.username = username
+        self.password = password
     }
 }
 
@@ -19,16 +31,8 @@ public final class Database {
         self.connection = connection
     }
 
-    public static func connect(host: Host, database: String, username: String, password: String? = nil) throws -> Database {
-        var config = ConnectionConfiguration()
-        config.host = host.host
-        config.port = host.port
-        config.database = database
-        config.ssl = host.useSSL
-
-        config.user = username
-        if let password = password { config.credential = Credential.md5Password(password: password) }
-
+    public static func connect(host: Host, credentials: Credentials) throws -> Database {
+        let config = ConnectionConfiguration(host: host, credentials: credentials)
         return Database(connection: try Connection(configuration: config))
     }
 
@@ -38,5 +42,18 @@ public final class Database {
 
     public func operation(_ sql: String, parameters: [PostgresValueConvertible?] = []) throws -> Operation {
         return try Operation(sql: sql, connection: connection, parameters: parameters)
+    }
+}
+
+extension ConnectionConfiguration {
+    init(host: Host, credentials: Credentials) {
+        self.init()
+        self.host = host.host
+        self.port = host.port
+        self.ssl = host.useSSL
+        self.database = host.database ?? self.database
+
+        self.user = credentials.username
+        self.credential = credentials.password.map(Credential.md5Password) ?? self.credential
     }
 }
