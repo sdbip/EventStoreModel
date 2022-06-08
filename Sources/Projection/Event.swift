@@ -1,12 +1,12 @@
-/// <summary>An event notifying that the state of an entity has changed at the source</summary>
+/// An event notifying that the state of an entity has changed at the source
 public struct Event {
-    /// <summary>The entity that changed</summary>
+    /// The entity that changed
     public let entity: Entity
-    /// <summary>The name of the event, indicating in what way the entity's state has changed</summary>
+    /// The name of the event, indicating in what way the entity's state has changed
     public let name: String
-    /// <summary>A JSON object specifying the details of the change</summary>
+    /// A JSON object specifying the details of the change
     public let jsonDetails: String
-    /// <summary>The position of this event in the stream. Useful for keeping track after restarting the application</summary>
+    /// The position of this event in the stream. Useful for keeping track after restarting the application
     public let position: Int64
 
     public init(entity: Entity, name: String, details: String, position: Int64) {

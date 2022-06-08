@@ -1,7 +1,8 @@
+/// An entity tracked by the Source system
 public struct Entity {
-    /// <summary>The id of the entity</summary>
+    /// The id of the entity
     public let id: String
-    /// <summary>The type of the entity</summary>
+    /// The type of the entity
     public let type: String
 
     public init(id: String, type: String) {

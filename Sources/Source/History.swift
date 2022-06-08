@@ -1,7 +1,12 @@
+/// A data structure that details the history of an ``Entity``.
 public struct History {
+    /// The `id` of the ``Entity``
     public let id: String
+    /// The `type` of the associated ``EntityState``
     public let type: String
+    /// The published events (official state) of the ``Entity``
     public let events: [PublishedEvent]
+    /// The stored `version` number of the ``Entity``
     public let version: EntityVersion
 
     public init(id: String, type: String, events: [PublishedEvent], version: EntityVersion) {
@@ -11,6 +16,7 @@ public struct History {
         self.version = version
     }
 
+    /// Initializes the ``Entity`` object that is represented by this ``History``
     public func entity<State: EntityState>() throws -> Entity<State> {
         guard State.typeId == type else {
             throw ReconstitutionError.incorrectType
