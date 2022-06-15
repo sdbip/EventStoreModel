@@ -35,7 +35,7 @@ final class Counter {
     var currentValue = 0
 
     func step(count: Int) {
-        unpublishedEvents.append(try! UnpublishedEvent(name: "DidStep", encodableDetails: DidStepDetails(count: count)))
+        unpublishedEvents.append(try! UnpublishedEvent(encodableDetails: DidStepDetails(count: count)))
     }
 }
 
@@ -50,6 +50,8 @@ extension Counter: EntityState {
     }
 }
 
-struct DidStepDetails: Codable {
+struct DidStepDetails: EventDetails, Codable {
+    static let eventName = "DidStep"
+
     let count: Int
 }
