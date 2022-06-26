@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS "Events" (
     "name" TEXT NOT NULL,
     "details" TEXT NOT NULL,
     "actor" TEXT NOT NULL,
-    "timestamp" REAL NOT NULL DEFAULT (julianday('now', 'utc')),
+    "timestamp" DECIMAL(14, 7) NOT NULL DEFAULT (cast(julianday(CURRENT_TIMESTAMP) AS REAL)),
     "version" INT NOT NULL,
     "position" BIGINT NOT NULL
 );

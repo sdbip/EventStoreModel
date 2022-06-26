@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS "Events" (
 
 CREATE TABLE IF NOT EXISTS "Properties" (
     "name" TEXT NOT NULL,
-    "value" TEXT NOT NULL
+    "value" DATA NOT NULL
 );
 
 INSERT INTO "Properties" ("name", "value") SELECT 'next_position', 0
