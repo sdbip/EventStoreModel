@@ -11,8 +11,18 @@ let package = Package(
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
-            name: "EventStore",
+            name: "PostgresSource",
             targets: ["Source", "PostgresSource"]),
+        .library(
+            name: "PostgresProjection",
+            targets: ["Projection", "PostgresProjection"]),
+
+        .library(
+            name: "SQLiteSource",
+            targets: ["Source", "SQLiteSource"]),
+        .library(
+            name: "SQLiteProjection",
+            targets: ["Projection", "SQLiteProjection"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
