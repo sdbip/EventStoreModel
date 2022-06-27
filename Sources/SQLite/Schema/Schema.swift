@@ -2,11 +2,15 @@ import Foundation
 
 public enum Schema {
     public static func add(to dbFile: String) throws {
+        let database = try Database(openFile: dbFile)
+        try add(to: database)
+        try database.close()
+    }
+
+    public static func add(to database: Database) throws {
         guard let schema = try bundledSchema() else { fatalError() }
 
-        let database = try Database(openFile: dbFile)
         try database.execute(schema)
-        try database.close()
     }
 
     private static func bundledSchema() throws -> String? {
