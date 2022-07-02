@@ -50,11 +50,11 @@ final class HistoryLoadTests: XCTestCase {
         XCTAssertEqual(history.events[0].actor, "a_user")
     }
 
-    func test_convertsTimestampFromJulianDay() throws {
+    func test_convertsTimestampDaysToDate() throws {
         try database.insertEntityRow(id: "test", type: "TheType", version: 42)
         try database.execute("""
             INSERT INTO Events (entityId, entityType, name, details, actor, timestamp, version, position) VALUES
-                ('test', 'TheType', 'any', '{}', 'any', 2459683.17199667, 0, 0)
+                ('test', 'TheType', 'any', '{}', 'any', 19095.67199667, 0, 0)
             """
         )
 

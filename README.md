@@ -83,6 +83,8 @@ The `name` and `details` (JSON) columns define what changed for the entity. The 
 
 The `actor` and `timestamp` columns are metadata that can be used for auditing.
 
+The `timestamp` is stored as the number of days (including fraction) that have passed since midnight UTC on Jan 1, 1970 (a.k.a. the Unix Epoch).
+
 The `Properties` table:
 
 ```sql
@@ -91,12 +93,3 @@ value DATA
 ```
 
 The properties table is at the moment only used to store the position for the next event. You could use this to add other information as needed.
-
-## Julian Day
-
-The event timestamp is stored in the Julian day format.
-
-> The Julian day number (JDN) is the integer assigned to a whole solar day in the Julian day count starting from noon Universal Time, with Julian day number 0 assigned to the day starting at noon on [November 24, 4714 BC].
-> -- [Wikipedia](https://en.wikipedia.org/wiki/Julian_day)
-
-You can convert calendar dates to/from a Julian day using this tool: https://www.typecalendar.com/julian-date.
