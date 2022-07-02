@@ -16,7 +16,7 @@ extension Database: EntityStoreRepository {
     }
 
     public func allEventRows(forEntityWithId entityId: String) throws -> [EventRow] {
-        return try operation("SELECT entityType, name, details, actor, timestamp FROM Events WHERE entityId = ? ORDER BY version", entityId)
+        return try operation("SELECT entity_type, name, details, actor, timestamp FROM Events WHERE entity_id = ? ORDER BY version", entityId)
             .query {
                 guard let type = $0.string(at: 0) else { throw SQLiteError.message("Event has no entityType") }
                 guard let name = $0.string(at: 1) else { throw SQLiteError.message("Event has no name") }

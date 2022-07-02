@@ -23,9 +23,9 @@ public func setUpEmptyTestDatabase() throws -> Database {
     }
 
     try Schema.add(to: database)
-    try database.operation(#"DELETE FROM "Events""#).execute()
-    try database.operation(#"DELETE FROM "Entities""#).execute()
-    try database.operation(#"UPDATE "Properties" SET "value" = 0 WHERE "name" = 'next_position'"#).execute()
+    try database.operation("DELETE FROM Events").execute()
+    try database.operation("DELETE FROM Entities").execute()
+    try database.operation("UPDATE Properties SET value = 0 WHERE name = 'next_position'").execute()
     
     return database
 }

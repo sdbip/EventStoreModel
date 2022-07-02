@@ -15,7 +15,7 @@ final class HistoryLoadTests: XCTestCase {
     }
     
     func test_fetchesEntityData() throws {
-        try database.operation(#"INSERT INTO "Entities" ("id", "type", "version") VALUES ('test', 'TheType', 42)"#).execute()
+        try database.operation("INSERT INTO Entities (id, type, version) VALUES ('test', 'TheType', 42)").execute()
 
         let history = try store.history(forEntityWithId: "test")
         XCTAssertEqual(history?.type, "TheType")
@@ -38,7 +38,7 @@ final class HistoryLoadTests: XCTestCase {
     func test_convertsTimestampFromDaysToDate() throws {
         try database.insertEntityRow(id: "test", type: "TheType", version: 42)
         try database.operation("""
-            INSERT INTO "Events" ("entityId", "entityType", "name", "details", "actor", "timestamp", "version", "position") VALUES
+            INSERT INTO Events (entity_id, entity_type, name, details, actor, timestamp, version, position) VALUES
                 ('test', 'TheType', 'any', '{}', 'any', 19095.67199667, 0, 0)
             """
         ).execute()

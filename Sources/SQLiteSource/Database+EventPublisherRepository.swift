@@ -20,7 +20,7 @@ extension Database: EventPublisherRepository {
     }
 
     public func insertEventRow(entityId: String, entityType: String, name: String, jsonDetails: String, actor: String, version: Int32, position: Int64) throws {
-        try operation("INSERT INTO Events (entityId, entityType, name, details, actor, version, position) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        try operation("INSERT INTO Events (entity_id, entity_type, name, details, actor, version, position) VALUES (?, ?, ?, ?, ?, ?, ?)",
             entityId,
             entityType,
             name,

@@ -122,7 +122,7 @@ final class PublishingTests: XCTestCase {
 
     private func maxPositionOfEvents(forEntityWithId id: String) throws -> Int64? {
         return try database.operation(
-            "SELECT MAX(position) FROM Events WHERE entityId = 'test'"
+            "SELECT MAX(position) FROM Events WHERE entity_id = 'test'"
         ).single { $0.int64(at: 0) }
     }
 }
