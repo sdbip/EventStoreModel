@@ -67,8 +67,8 @@ The `Entities` table has two data columns: the `type` and the `version` of an en
 The `Events` table:
 
 ```sql
-"entityId" TEXT
-"entityType" TEXT
+"entity_id" TEXT
+"entity_type" TEXT
 "name" TEXT
 "details" TEXT
 "actor" TEXT
@@ -77,7 +77,7 @@ The `Events` table:
 "position" BIGINT
 ```
 
-The events table is the main storage space for entity state. The `entityId` and `entityType` columns must match the corresponding columns for a row in the `Entities` table. This is the entity that changed with this event.
+The events table is the main storage space for entity state. The `entity_id` and `entity_type` columns must match the corresponding columns for a row in the `Entities` table. This is the entity that changed with this event.
 
 The `name` and `details` (JSON) columns define what changed for the entity. The `version` column orders events per entity, and the last event stored for an entity must match its `version` column. The `position` column orders events globally and is motly used for projections.
 
