@@ -71,7 +71,6 @@ public struct EventPublisher {
             }
 
             var nextPosition = try repository.nextPosition()
-            try repository.setNextPosition(nextPosition + Int64(events.count))
 
             var nextVersion = (currentVersion ?? -1) + 1
             for event in events {

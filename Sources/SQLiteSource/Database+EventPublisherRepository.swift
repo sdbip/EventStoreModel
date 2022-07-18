@@ -32,18 +32,13 @@ extension Database: EventPublisherRepository {
     }
 
     public func nextPosition() throws -> Int64 {
-        try operation("SELECT value FROM Properties WHERE name = 'next_position'")
-            .single(read: { $0.int64(at: 0) })!
-    }
-
-    public func setNextPosition(_ position: Int64) throws {
-        try operation("UPDATE Properties SET value = ? WHERE name = 'next_position'", position)
-            .execute()
+        try operation("SELECT max(position) + 1 FROM Events")
+            .single { $0.int64(at: 0) }!
     }
 
     public func version(ofEntityRowWithId id: String) throws -> Int32? {
         return try operation("SELECT version FROM Entities WHERE id = ?", id)
-            .single(read: { $0.int32(at: 0) })
+            .single { $0.int32(at: 0) }
     }
 
     public func setVersion(_ version: Int32, onEntityRowWithId id: String) throws {

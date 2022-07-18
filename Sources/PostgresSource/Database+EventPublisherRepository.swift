@@ -37,13 +37,11 @@ extension Database: EventPublisherRepository {
     }
 
     public func nextPosition() throws -> Int64 {
-        try operation("SELECT value FROM Properties WHERE name = 'next_position'")
-            .single { try Int64($0[0].int()) }!
-    }
-
-    public func setNextPosition(_ position: Int64) throws {
-        try operation("UPDATE Properties SET value = $1 WHERE name = 'next_position'", parameters: Int(position))
-            .execute()
+        try operation("SELECT max(position) + 1 FROM Events")
+            .single {
+                if $0[0].isNull { return 0 }
+                return try Int64($0[0].int())
+            }!
     }
 
     public func version(ofEntityRowWithId id: String) throws -> Int32? {
