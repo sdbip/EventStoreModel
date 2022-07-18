@@ -8,7 +8,7 @@ final class PublishingTests: XCTestCase {
     var publisher: EventPublisher!
     var entityStore: EntityStore!
     var database: Database!
-    
+
     override func setUp() async throws {
         database = try setUpEmptyTestDatabase()
         publisher = EventPublisher(repository: database)

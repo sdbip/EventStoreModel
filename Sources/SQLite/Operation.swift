@@ -35,7 +35,7 @@ public struct Operation {
     public func single<T>(read: (ResultRow) throws -> T) throws -> T? {
         return try query(read: read).first
     }
-    
+
     public func single<T>(read: (ResultRow) throws -> T?) throws -> T? {
         return try query(read: read).first?.flatMap { $0 }
     }

@@ -13,7 +13,7 @@ extension Database: EventRepository {
                   let name = $0.string(at: 2),
                   let details = $0.string(at: 3)
             else { throw SQLiteError.unknown }
-            
+
             return Event(
                 entity: Entity(id: entityId, type: type),
                 name: name,

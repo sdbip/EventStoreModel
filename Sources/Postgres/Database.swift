@@ -17,7 +17,7 @@ public struct Host {
 public struct Credentials {
     public var username: String
     public var password: String?
-    
+
     public init(username: String, password: String? = nil) {
         self.username = username
         self.password = password

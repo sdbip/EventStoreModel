@@ -13,7 +13,7 @@ final class HistoryLoadTests: XCTestCase {
         database = try setUpEmptyTestDatabase()
         store = EntityStore(repository: database)
     }
-    
+
     func test_fetchesEntityData() throws {
         try database.operation("INSERT INTO Entities (id, type, version) VALUES ('test', 'TheType', 42)").execute()
 
