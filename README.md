@@ -93,3 +93,24 @@ value DATA
 ```
 
 The properties table is at the moment only used to store the position for the next event. You could use this to add other information as needed.
+
+## Database Support
+
+There is currently only support for two database providers.
+
+- PostgreSQL
+- SQLite
+
+### What about SQL Server?
+
+As of 2022, there is no known SQL Server driver available for Swift. Here's a discussion that indicates some small progress: https://forums.swift.org/t/sql-server-driver/20327. It is unknown what has happened since April 2020.
+
+Apparently SQL Server is not prioritised by the Swift community.
+
+### Maybe add suppoet for MySQL?
+
+MySQL support does not feel as important as SQL Server. On the other hand, MySQL has Swift drivers. Here are a couple:
+
+- https://github.com/mcorega/MySqlSwiftNative
+- https://github.com/novi/mysql-swift
+
