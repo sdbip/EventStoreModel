@@ -6,7 +6,7 @@ import PostgresSource
 import Source
 
 let host = Host(
-    "localhost",
+    ProcessInfo.processInfo.environment["POSTGRES_TEST_HOST"] ?? "localhost",
     database: ProcessInfo.processInfo.environment["POSTGRES_TEST_DATABASE"]!,
     useSSL: false)
 let credentials = Credentials(

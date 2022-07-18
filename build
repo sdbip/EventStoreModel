@@ -1,7 +1,7 @@
 builddir="$(readlink -f buildscripts)"
 symlink=.git/hooks/pre-commit
 
-[ -e $builddir/developer.env ] || touch $builddir/developer.env
+[ -e $builddir/developer.env ] || cp $builddir/template.env $builddir/developer.env
 
 ## Add Git Pre-Commit hook
 [ -h $symlink ] && rm $symlink
