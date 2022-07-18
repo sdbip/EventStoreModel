@@ -52,7 +52,7 @@ If the stored version number is different from what was read at reconstitution, 
 
 ## Tables
 
-State is stored in a relational database with built-in support for SQLite and PostgreSQL.
+State is stored in a relational database with built-in support for SQLite and PostgreSQL. Note that table names are never quoted in the SQL scripts, and, because reasons, PostgreSQL converts unquoted names to lowercase. That is however the only difference you will see.
 
 The `Entities` table:
 
@@ -72,7 +72,7 @@ The `Events` table:
 "name" TEXT
 "details" TEXT
 "actor" TEXT
-"timestamp" DECIMAL(14,7) -- Julian Day (days since ) representation
+"timestamp" DECIMAL(12,7) -- Julian Day (days since ) representation
 "version" INT
 "position" BIGINT
 ```
