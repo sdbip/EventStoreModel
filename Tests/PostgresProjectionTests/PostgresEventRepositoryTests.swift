@@ -10,6 +10,7 @@ final class PostgresEventRepositoryTests: XCTestCase {
 
     override func setUp() async throws {
         database = try setUpEmptyTestDatabase()
+        try database.insertEntityRow(id: "entity", type: "a type", version: 1)
     }
 
     func test_readEventsAfter_returnsEvents() throws {
