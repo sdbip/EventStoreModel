@@ -7,7 +7,7 @@ import Foundation
 /// let store: EntityStore = ...
 /// let publisher: EventPublisher = ...
 ///
-/// let entity = try store.reconstitute(entityWithId: "the id") as Entity<MyEntityState>
+/// let entity = try store.reconstituteEntity("the id") as Entity<MyEntityState>
 /// entity.state.performOperations()
 /// try publisher.publishChanges(entity)
 /// ```
@@ -21,7 +21,7 @@ public struct EntityStore {
     }
 
     /// Get the stored type-name for the entity with a given id
-    public func type(ofEntityWithId id: String) throws -> String? {
+    public func entityType(id: String) throws -> String? {
         return try repository.type(ofEntityRowWithId: id)
     }
 
@@ -29,15 +29,15 @@ public struct EntityStore {
     ///
     /// - Throws: if the associated ``EntityState`` has the wrong `type` identifier.
     /// - Throws: If the database operation fails
-    public func reconstitute<State: EntityState>(entityWithId id: String) throws -> Entity<State>? {
-        guard let history = try history(forEntityWithId: id) else { return nil }
+    public func reconstituteEntity<State: EntityState>(_ id: String) throws -> Entity<State>? {
+        guard let history = try entityHistory(id: id) else { return nil }
         return try history.entity()
     }
 
     /// Fetch the entire history of an ``Entity``
     ///
     /// - Throws: If the database operation fails
-    public func history(forEntityWithId id: String) throws -> History? {
+    public func entityHistory(id: String) throws -> History? {
         guard let entityRow = try repository.entityRow(withId: id) else { return nil }
         let eventRows = try repository.allEventRows(forEntityWithId: id).map {
             PublishedEvent(name: $0.name, details: $0.details, actor: $0.actor, timestamp: Date(timeIntervalSince1970: $0.timestamp * secondsPerDay))

@@ -117,7 +117,7 @@ final class PublishingTests: XCTestCase {
 
     private func history<__State>(afterPublishingChangesFor entity: Entity<__State>, actor: String) throws -> History? where __State: EntityState {
         try publisher.publishChanges(entity: entity, actor: actor)
-        return try entityStore.history(forEntityWithId: entity.id)
+        return try entityStore.entityHistory(id: entity.id)
     }
 
     private func maxPositionOfEvents(forEntityWithId id: String) throws -> Int64? {
@@ -131,7 +131,7 @@ final class TestEntity: EntityState {
     static let typeId = "TestEntity"
 
     var unpublishedEvents: [UnpublishedEvent] = []
-    
+
     init() {}
     init(events: [PublishedEvent]) {}
 }

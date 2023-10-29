@@ -17,7 +17,7 @@ final class HistoryLoadTests: XCTestCase {
     func test_fetchesEntityData() throws {
         try database.operation("INSERT INTO Entities (id, type, version) VALUES ('test', 'TheType', 42)").execute()
 
-        let history = try store.history(forEntityWithId: "test")
+        let history = try store.entityHistory(id: "test")
         XCTAssertEqual(history?.type, "TheType")
         XCTAssertEqual(history?.version, 42)
     }
@@ -26,7 +26,7 @@ final class HistoryLoadTests: XCTestCase {
         try database.insertEntityRow(id: "test", type: "TheType", version: 42)
         try database.insertEventRow(entityId: "test", entityType: "TheType", name: "TheEvent", jsonDetails: "{}", actor: "a_user", version: 0, position: 0)
 
-        guard let history = try store.history(forEntityWithId: "test") else { return XCTFail("No history returned") }
+        guard let history = try store.entityHistory(id: "test") else { return XCTFail("No history returned") }
 
         XCTAssertEqual(history.events.count, 1)
 
@@ -43,7 +43,7 @@ final class HistoryLoadTests: XCTestCase {
             """
         ).execute()
 
-        guard let history = try store.history(forEntityWithId: "test") else { return XCTFail("No history returned") }
+        guard let history = try store.entityHistory(id: "test") else { return XCTFail("No history returned") }
         guard let event = history.events.first else { return XCTFail("No event returned")}
 
         XCTAssertEqual("\(formatWithMilliseconds(date: event.timestamp))", "2022-04-13 16:07:40.515 +0000")

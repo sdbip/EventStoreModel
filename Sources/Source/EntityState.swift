@@ -10,17 +10,17 @@
 /// code for the parts you need to define yourself):
 /// ```
 /// public class MyEntity: EntityState {
-///     public static let type = ["MyEntity"]
-///     public var unpublishedEvents: [UnpublishedEvent] = []
+///     public static let typeId = #{"MyEntity"}#
+///     public private(set) var unpublishedEvents: [UnpublishedEvent] = []
 ///
 ///     // ... add the necessary properties needed to control behaviour
 ///
 ///     // Initialize the current state of an entity from its published events.
-///     init(events: [PublishedEvents]) {
+///     init(events: [PublishedEvent]) {
 ///         for event in events {
-///             if event.name == ["an event that matters to the behaviour"] {
+///             if event.name == #{"an event that matters to the behaviour"}# {
 ///                 // update the respective state information
-///             } else if event.name == ["another event that matters"] {
+///             } else if event.name == #{"another event that matters"}# {
 ///                 // update the respective state information
 ///             ) else {
 ///                 // Ignore events that do not affect behaviour
@@ -29,14 +29,14 @@
 ///     }
 ///
 ///     // Perform an operation on the current state of the entity. This should add unpublished events as necessary.
-///     public func operation([parameters)] throws {
-///         if [state does not allow this operation] { throw [an Error] }
-///         if [state is a certain way] {
-///             try unpublishedEvents.append(UnpublishedEvent(EventType1.eventName, EventType1([parameters]))
+///     public func operation(#{parameters}#) throws {
+///         if #{state does not allow this operation}# { throw #{an Error}# }
+///         if #{state is a certain way}# {
+///             try unpublishedEvents.append(UnpublishedEvent(EventType1.eventName, EventType1(#{parameters}#))
 ///             // update the state information if this change affects future behaviour
-///         ) else if [state is another way] {
-///             try unpublishedEvents.append(UnpublishedEvent(EventType2.eventName, EventType1([parameters]))
-///             try unpublishedEvents.append(UnpublishedEvent(EventType3.eventName, EventType1([parameters]))
+///         ) else if #{state is another way}# {
+///             try unpublishedEvents.append(UnpublishedEvent(EventType2.eventName, EventType1(#{parameters}#))
+///             try unpublishedEvents.append(UnpublishedEvent(EventType3.eventName, EventType1(#{parameters}#))
 ///             // update the state information if this change affects future behaviour
 ///         ) else {
 ///             // Sometimes operations do not have any effect on the state
@@ -45,7 +45,7 @@
 ///
 ///     // This structure stores the details of an "EventType1" change.
 ///     struct EventType1 {
-///         static let eventName = ["EventType1"]
+///         static let eventName = #{"EventType1"}#
 ///         // ...
 ///     }
 /// }
@@ -59,7 +59,7 @@ public protocol EntityState: AnyObject {
     ///
     /// ```
     /// public class MyEntity: EntityState {
-    ///     public static let type = "MyEntity"
+    ///     public static let typeId = #{"MyEntity"}#
     ///     // Futher implementation
     /// }
     /// ```
