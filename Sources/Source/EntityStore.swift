@@ -7,7 +7,7 @@ import Foundation
 /// let store: EntityStore = ...
 /// let publisher: EventPublisher = ...
 ///
-/// let entity = try store.reconstituteEntity("the id") as Entity<MyEntityState>
+/// let entity = try store.reconstituteEntity("the id") as MyEntityClass
 /// entity.state.performOperations()
 /// try publisher.publishChanges(entity)
 /// ```
@@ -20,14 +20,14 @@ public struct EntityStore {
         self.repository = repository
     }
 
-    /// Get the stored type-name for the entity with a given id
+    /// Get the stored `typeId` for the entity with a given id
     public func entityType(id: String) throws -> String? {
         return try repository.type(ofEntityRowWithId: id)
     }
 
     /// Reconstitute an entity from its published events.
     ///
-    /// - Throws: if the associated ``EntityState`` has the wrong `type` identifier.
+    /// - Throws: if the associated ``EntityType`` has the wrong `typeId`.
     /// - Throws: If the database operation fails
     public func reconstituteEntity<EntityType: Entity>(_ id: String) throws -> EntityType? {
         guard let history = try entityHistory(id: id) else { return nil }

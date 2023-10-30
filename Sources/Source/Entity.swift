@@ -9,22 +9,22 @@ public protocol Entity {
 
     /// A unique identifier for the conforming type, used to detect when trying
     /// to reconstitute an entity of the wrong type. This should be a unique
-    /// name that isn't used by any other entity type. The actual name of
+    /// name that isn't used by any other entity implementation. The name of
     /// the conforming type may be a good rule of thumb.
     ///
     /// ```
-    /// public class MyEntity: EntityState {
+    /// public class MyEntity: Entity {
     ///     public static let typeId = #{"MyEntity"}#
     ///     // Futher implementation
     /// }
     /// ```
     ///
-    /// Note, however, that if you change the name of your type, the `type`
+    /// Note, however, that if you change the name of your type, the `typeId`
     /// property must remain the same or it will no longer match the stored
     /// entities in the database, and you will not be able to reconstitute
     /// them anymore.
     ///
-    /// It is technically allowed to duplicate the `type` property for
+    /// It is technically allowed to duplicate the `typeId` property for
     /// multiple entities, but it serioulsy diminishes the ability to detect
     /// errors.
     static var typeId: String { get }

@@ -2,7 +2,7 @@
 public struct History {
     /// The `id` of the ``Entity``
     public let id: String
-    /// The `type` of the associated ``EntityState``
+    /// The `typeId` of the associated ``Entity`` implementation
     public let type: String
     /// The published events (official state) of the ``Entity``
     public let events: [PublishedEvent]

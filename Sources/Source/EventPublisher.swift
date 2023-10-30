@@ -7,7 +7,7 @@ import Foundation
 /// let store: EntityStore = ...
 /// let publisher: EventPublisher = ...
 ///
-/// let entity = try store.reconstituteEntity("the id") as Entity<MyEntityState>
+/// let entity = try store.reconstituteEntity("the id") as MyEntityType
 /// entity.state.performOperations()
 /// try publisher.publishChanges(entity, actor: "the user")
 /// ```
@@ -16,7 +16,7 @@ import Foundation
 /// ```
 /// let publisher: EventPublisher = ...
 ///
-/// let entity = Entity<MyEntityState>(id: "the id")
+/// let entity = MyEntityType(id: "the id")
 /// try publisher.publishChanges(entity, actor: "the user")
 /// ```
 ///
@@ -24,7 +24,7 @@ import Foundation
 /// ```
 /// let publisher: EventPublisher = ...
 ///
-/// guard let entity: Entity<MyEntityState> = try store.reconstituteEntity("the id") else { throw #{an error}# }
+/// guard let entity: MyEntityType = try store.reconstituteEntity("the id") else { throw #{an error}# }
 /// entity?.state.performOperations()
 /// try publisher.publish(UnpublishedEvent(...), forId: "the id", type: "the type of the entity", actor: "the user")
 /// ```
