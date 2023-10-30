@@ -63,7 +63,7 @@ final class PublishingTests: XCTestCase {
 
     func test_addsEventsExistingEntity() throws {
         let existingEntity = TestEntity(reconstitution: .init(id: "test"))
-        try publisher.publishChanges(entity: existingEntity, actor: "any")
+        try publisher.publishChanges(to: existingEntity, actor: "any")
 
         let reconstitutedVersion = TestEntity(reconstitution: .init(id: "test", version: 0))
         reconstitutedVersion.unpublishedEvents = [UnpublishedEvent(name: "AnEvent", details: "{}")!]
@@ -76,18 +76,18 @@ final class PublishingTests: XCTestCase {
     func test_throwsIfVersionHasChanged() throws {
         let existingEntity = TestEntity(reconstitution: .init(id: "test"))
         existingEntity.unpublishedEvents = [UnpublishedEvent(name: "AnEvent", details: "{}")!]
-        try publisher.publishChanges(entity: existingEntity, actor: "any")
+        try publisher.publishChanges(to: existingEntity, actor: "any")
 
         let reconstitutedVersion = TestEntity(reconstitution: .init(id: "test", version: 0))
         reconstitutedVersion.unpublishedEvents.append(UnpublishedEvent(name: "AnEvent", details: "{}")!)
 
-        XCTAssertThrowsError(try publisher.publishChanges(entity: reconstitutedVersion, actor: "user_x"))
+        XCTAssertThrowsError(try publisher.publishChanges(to: reconstitutedVersion, actor: "user_x"))
     }
 
     func test_updatesNextPosition() throws {
         let existingEntity = TestEntity(reconstitution: .init(id: "test"))
         existingEntity.unpublishedEvents = [UnpublishedEvent(name: "AnEvent", details: "{}")!]
-        try publisher.publishChanges(entity: existingEntity, actor: "any")
+        try publisher.publishChanges(to: existingEntity, actor: "any")
 
         let entity = TestEntity(reconstitution: .init(id: "test", version: 1))
         entity.unpublishedEvents = [
@@ -96,14 +96,14 @@ final class PublishingTests: XCTestCase {
             UnpublishedEvent(name: "AnEvent", details: "{}")!
         ]
 
-        try publisher.publishChanges(entity: entity, actor: "user_x")
+        try publisher.publishChanges(to: entity, actor: "user_x")
 
         XCTAssertEqual(try database.nextPosition(), 4)
         XCTAssertEqual(try maxPositionOfEvents(forEntityWithId: "test"), 3)
     }
 
     private func history<EntityType: Entity>(afterPublishingChangesFor entity: EntityType, actor: String) throws -> History? {
-        try publisher.publishChanges(entity: entity, actor: actor)
+        try publisher.publishChanges(to: entity, actor: actor)
         return try entityStore.entityHistory(id: entity.id)
     }
 

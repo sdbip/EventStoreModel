@@ -1,6 +1,6 @@
 public protocol EntityStoreRepository {
-    func type(ofEntityRowWithId id: String) throws -> String?
+    func typeId(entityRowWithId id: String) throws -> String?
 
-    func entityRow(withId id: String) throws -> EntityRow?
-    func allEventRows(forEntityWithId entityId: String) throws -> [EventRow]
+    func entityRow(id: String) throws -> EntityRow?
+    func allEventRows(entityId: String) throws -> [EventRow]
 }

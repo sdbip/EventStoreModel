@@ -9,7 +9,7 @@ import Foundation
 ///
 /// let entity = try store.reconstituteEntity("the id") as MyEntityClass
 /// entity.state.performOperations()
-/// try publisher.publishChanges(entity)
+/// try publisher.publishChanges(to: entity, actor: "a username")
 /// ```
 public struct EntityStore {
     private let secondsPerDay = 86_400.0
@@ -22,7 +22,7 @@ public struct EntityStore {
 
     /// Get the stored `typeId` for the entity with a given id
     public func entityType(id: String) throws -> String? {
-        return try repository.type(ofEntityRowWithId: id)
+        return try repository.typeId(entityRowWithId: id)
     }
 
     /// Reconstitute an entity from its published events.
@@ -38,8 +38,8 @@ public struct EntityStore {
     ///
     /// - Throws: If the database operation fails
     public func entityHistory(id: String) throws -> History? {
-        guard let entityRow = try repository.entityRow(withId: id) else { return nil }
-        let eventRows = try repository.allEventRows(forEntityWithId: id).map {
+        guard let entityRow = try repository.entityRow(id: id) else { return nil }
+        let eventRows = try repository.allEventRows(entityId: id).map {
             PublishedEvent(name: $0.name, details: $0.details, actor: $0.actor, timestamp: Date(timeIntervalSince1970: $0.timestamp * secondsPerDay))
         }
         return History(id: entityRow.id, type: entityRow.type, events: eventRows, version: .eventCount(entityRow.version))

@@ -52,7 +52,7 @@ extension Counter: Entity {
     }
 }
 
-struct DidStepDetails: EventDetails, Codable {
+struct DidStepDetails: EventNaming, Codable {
     static let eventName = "DidStep"
 
     let count: Int

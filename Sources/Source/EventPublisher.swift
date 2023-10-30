@@ -9,7 +9,7 @@ import Foundation
 ///
 /// let entity = try store.reconstituteEntity("the id") as MyEntityType
 /// entity.state.performOperations()
-/// try publisher.publishChanges(entity, actor: "the user")
+/// try publisher.publishChanges(to: entity, actor: "the user")
 /// ```
 ///
 /// Can also be used to create and store new entities
@@ -17,10 +17,10 @@ import Foundation
 /// let publisher: EventPublisher = ...
 ///
 /// let entity = MyEntityType(id: "the id")
-/// try publisher.publishChanges(entity, actor: "the user")
+/// try publisher.publishChanges(to: entity, actor: "the user")
 /// ```
 ///
-/// Or use ``publish(_:forId:type:actor:)`` to publish an event that doesn't care about prior state:
+/// Or use ``publishConcurrencySafeEvent(_:entityId:typeId:actor:)`` to publish an event that doesn't care about prior state:
 /// ```
 /// let publisher: EventPublisher = ...
 ///
@@ -40,7 +40,7 @@ public struct EventPublisher {
     ///
     /// - Throws: If the entity has already been updated (by another process) since it was reconstituted.
     /// - Throws: If the database operation fails
-    public func publishChanges<EntityType: Entity>(entity: EntityType, actor: String) throws {
+    public func publishChanges<EntityType: Entity>(to entity: EntityType, actor: String) throws {
         try publish(
             events: entity.unpublishedEvents,
             entityId: entity.reconstitution.id, entityType: EntityType.typeId,
@@ -52,14 +52,14 @@ public struct EventPublisher {
     /// Publishes a single event without checking for concurrent updates.
     ///
     /// Useful if the event does not depend on the current state. A player, for
-    /// example, might be rewarded a number of points for some achievment, If
+    /// example, might be rewarded a number of points for some achievement, If
     /// the event details the number of added points, rather than the new
     /// score, mutiple processes can update the score at he same time without
     /// needing to manage concurrency,
     ///
     /// - Throws: If the database operation fails
-    public func publish(_ event: UnpublishedEvent, forId id: String, type: String, actor: String) throws {
-        try publish(events: [event], entityId: id, entityType: type, actor: actor, isExpectedVersion: { _ in true })
+    public func publishConcurrencySafeEvent(_ event: UnpublishedEvent, entityId id: String, typeId: String, actor: String) throws {
+        try publish(events: [event], entityId: id, entityType: typeId, actor: actor, isExpectedVersion: { _ in true })
     }
 
     private func publish(events: [UnpublishedEvent], entityId: String, entityType: String, actor: String, isExpectedVersion: (Int32?) -> Bool) throws {

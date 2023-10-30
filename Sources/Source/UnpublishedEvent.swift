@@ -36,8 +36,8 @@ public struct UnpublishedEvent {
     ///
     /// - Throws: If the data structure cannot be parsed as JSON (eg. if it
     ///    contains cyclic references)
-    public init<Details>(encodableDetails details: Details) throws where Details: Encodable&EventDetails {
-        try self.init(name: Details.eventName, encodableDetails: details)
+    public init<Naming>(encodableDetails details: Naming) throws where Naming: Encodable&EventNaming {
+        try self.init(name: Naming.eventName, encodableDetails: details)
     }
 
     /// Initializes an ``UnpublishedEvent`` with the JSON representation of

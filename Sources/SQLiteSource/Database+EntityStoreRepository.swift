@@ -2,12 +2,12 @@ import Source
 import SQLite
 
 extension Database: EntityStoreRepository {
-    public func type(ofEntityRowWithId id: String) throws -> String? {
+    public func typeId(entityRowWithId id: String) throws -> String? {
         return try operation("SELECT type FROM Entities WHERE id = 'test'")
             .single { $0.string(at: 0) }
     }
 
-    public func entityRow(withId id: String) throws -> EntityRow? {
+    public func entityRow(id: String) throws -> EntityRow? {
         return try operation("SELECT type, version FROM Entities WHERE id = ?", id)
         .single {
             guard let type = $0.string(at: 0) else { throw SQLiteError.message("Entity has no type") }
@@ -15,7 +15,7 @@ extension Database: EntityStoreRepository {
         }
     }
 
-    public func allEventRows(forEntityWithId entityId: String) throws -> [EventRow] {
+    public func allEventRows(entityId: String) throws -> [EventRow] {
         return try operation("SELECT entity_type, name, details, actor, timestamp FROM Events WHERE entity_id = ? ORDER BY version", entityId)
             .query {
                 guard let type = $0.string(at: 0) else { throw SQLiteError.message("Event has no entityType") }
