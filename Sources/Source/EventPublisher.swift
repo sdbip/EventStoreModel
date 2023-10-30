@@ -40,9 +40,12 @@ public struct EventPublisher {
     ///
     /// - Throws: If the entity has already been updated (by another process) since it was reconstituted.
     /// - Throws: If the database operation fails
-    public func publishChanges<State>(entity: Entity<State>, actor: String) throws where State: EntityState {
-        try publish(events: entity.state.unpublishedEvents, entityId: entity.id, entityType: State.typeId, actor: actor) {
-            v in v == entity.version.value
+    public func publishChanges<EntityType: Entity>(entity: EntityType, actor: String) throws {
+        try publish(
+            events: entity.unpublishedEvents,
+            entityId: entity.reconstitution.id, entityType: EntityType.typeId,
+            actor: actor) {
+            v in v == entity.reconstitution.version.value
         }
     }
 
