@@ -5,10 +5,10 @@ final class TestEntity: Entity {
     static let typeId = "TestEntity"
     let unpublishedEvents: [UnpublishedEvent] = []
     var reconstitutedEvents: [PublishedEvent] = []
-    var reconstitution: ReconstitutionData
+    var snapshotId: SnapshotId
     
-    init(reconstitution: ReconstitutionData) {
-        self.reconstitution = reconstitution
+    init(snapshotId: SnapshotId) {
+        self.snapshotId = snapshotId
     }
 
     func replay(_ event: PublishedEvent) {

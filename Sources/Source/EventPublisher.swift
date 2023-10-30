@@ -43,9 +43,9 @@ public struct EventPublisher {
     public func publishChanges<EntityType: Entity>(to entity: EntityType, actor: String) throws {
         try publish(
             events: entity.unpublishedEvents,
-            entityId: entity.reconstitution.id, entityType: EntityType.typeId,
+            entityId: entity.id, entityType: EntityType.typeId,
             actor: actor) {
-            v in v == entity.reconstitution.version.value
+            v in v == entity.version.value
         }
     }
 

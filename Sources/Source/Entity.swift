@@ -29,45 +29,42 @@ public protocol Entity {
     /// errors.
     static var typeId: String { get }
 
-    /// A unique identifier for this entity.
-    var reconstitution: ReconstitutionData { get }
+    /// Identification for the snapshot that stores the current state
+    var snapshotId: SnapshotId { get }
 
     /// All events that need to be published to persist the current state.
     var unpublishedEvents: [UnpublishedEvent] { get }
 
-    /// Initializes the state from already published events. Events may be
-    /// ignored if they have no effect on the behaviour of the entity.
-    ///
-    /// An event might prevent certain future operations, or it may affect
-    /// how those operations change the state. Such events will probably
-    /// set some flags or even remember specific data so they can be
-    /// referenced when said operations are performed.
-    ///
-    /// Other events might only exist to feed data to a projection. Such
-    /// events can be ignored entirely here.
-    init(reconstitution: ReconstitutionData)
+    /// Initializes a specific version of an entity.
+    init(snapshotId: SnapshotId)
 
     func replay(_ event: PublishedEvent)
 }
 
 extension Entity {
-    public var id: String { reconstitution.id }
-    public var version: EntityVersion { reconstitution.version }
+    public var id: String { snapshotId.entityId }
+    public var version: EntityVersion { snapshotId.version }
 }
 
-public struct ReconstitutionData {
+public struct SnapshotId {
 
     /// A unique identifier for this entity.
-    public let id: String
+    public let entityId: String
 
     /// Optimistic concurrency guard. If the stored version has changed after
     /// this instance was reconstituted, publishing changes to it will not be
     /// allowed. The changes done to this instance will be discarded.
     public let version: EntityVersion
 
-    public init(id: String, version: EntityVersion = .notSaved) {
-        self.id = id
+    public init(entityId: String, version: EntityVersion = .notSaved) {
+        self.entityId = entityId
         self.version = version
     }
 
+}
+
+extension SnapshotId : ExpressibleByStringLiteral {
+    public init(stringLiteral value: StringLiteralType) {
+        self.init(entityId: value)
+    }
 }

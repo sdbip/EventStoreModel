@@ -29,7 +29,7 @@ final class PublishingTests: XCTestCase {
     }
 
     func test_canPublishEntityWithoutEvents() throws {
-        let entity = TestEntity(reconstitution: .init(id: "test"))
+        let entity = TestEntity(snapshotId: "test")
         entity.unpublishedEvents = []
 
         let history = try history(afterPublishingChangesFor: entity, actor: "user_x")
@@ -40,7 +40,7 @@ final class PublishingTests: XCTestCase {
     }
 
     func test_canPublishSingleEvent() throws {
-        let entity = TestEntity(reconstitution: .init(id: "test"))
+        let entity = TestEntity(snapshotId: "test")
         entity.unpublishedEvents = [UnpublishedEvent(name: "AnEvent", details: "{}")!]
 
         let history = try history(afterPublishingChangesFor: entity, actor: "user_x")
@@ -52,7 +52,7 @@ final class PublishingTests: XCTestCase {
     }
 
     func test_versionMatchesNumberOfEvents() throws {
-        let entity = TestEntity(reconstitution: .init(id: "test"))
+        let entity = TestEntity(snapshotId: "test")
         entity.unpublishedEvents = [UnpublishedEvent(name: "AnEvent", details: "{}")!]
 
         let history = try history(afterPublishingChangesFor: entity, actor: "user_x")
@@ -61,7 +61,7 @@ final class PublishingTests: XCTestCase {
     }
 
     func test_canPublishMultipleEvents() throws {
-        let entity = TestEntity(reconstitution: .init(id: "test"))
+        let entity = TestEntity(snapshotId: "test")
         entity.unpublishedEvents = [
             UnpublishedEvent(name: "AnEvent", details: "{}")!,
             UnpublishedEvent(name: "AnEvent", details: "{}")!,
@@ -75,10 +75,10 @@ final class PublishingTests: XCTestCase {
     }
 
     func test_addsEventsExistingEntity() throws {
-        let existingEntity = TestEntity(reconstitution: .init(id: "test"))
+        let existingEntity = TestEntity(snapshotId: "test")
         try publisher.publishChanges(to: existingEntity, actor: "any")
 
-        let reconstitutedVersion = TestEntity(reconstitution: .init(id: "test", version: 0))
+        let reconstitutedVersion = TestEntity(snapshotId: .init(entityId: "test", version: 0))
         reconstitutedVersion.unpublishedEvents = [UnpublishedEvent(name: "AnEvent", details: "{}")!]
 
         let history = try history(afterPublishingChangesFor: reconstitutedVersion, actor: "any")
@@ -87,22 +87,22 @@ final class PublishingTests: XCTestCase {
     }
 
     func test_throwsIfVersionHasChanged() throws {
-        let existingEntity = TestEntity(reconstitution: .init(id: "test"))
+        let existingEntity = TestEntity(snapshotId: "test")
         existingEntity.unpublishedEvents = [UnpublishedEvent(name: "AnEvent", details: "{}")!]
         try publisher.publishChanges(to: existingEntity, actor: "any")
 
-        let reconstitutedVersion = TestEntity(reconstitution: .init(id: "test", version: .eventCount(0)))
+        let reconstitutedVersion = TestEntity(snapshotId: .init(entityId: "test", version: .eventCount(0)))
         reconstitutedVersion.unpublishedEvents.append(UnpublishedEvent(name: "AnEvent", details: "{}")!)
 
         XCTAssertThrowsError(try publisher.publishChanges(to: reconstitutedVersion, actor: "user_x"))
     }
 
     func test_updatesNextPosition() throws {
-        let existingEntity = TestEntity(reconstitution: .init(id: "test"))
+        let existingEntity = TestEntity(snapshotId: "test")
         existingEntity.unpublishedEvents = [UnpublishedEvent(name: "AnEvent", details: "{}")!]
         try publisher.publishChanges(to: existingEntity, actor: "any")
 
-        let entity = TestEntity(reconstitution: .init(id: "test", version: 1))
+        let entity = TestEntity(snapshotId: .init(entityId: "test", version: 1))
         entity.unpublishedEvents = [
             UnpublishedEvent(name: "AnEvent", details: "{}")!,
             UnpublishedEvent(name: "AnEvent", details: "{}")!,
@@ -129,12 +129,12 @@ final class PublishingTests: XCTestCase {
 
 final class TestEntity: Entity {
     static let typeId = "TestEntity"
-    let reconstitution: ReconstitutionData
+    let snapshotId: SnapshotId
 
     var unpublishedEvents: [UnpublishedEvent] = []
 
-    init(reconstitution: ReconstitutionData) {
-        self.reconstitution = reconstitution
+    init(snapshotId: SnapshotId) {
+        self.snapshotId = snapshotId
     }
 
     func replay(_ event: PublishedEvent) { }

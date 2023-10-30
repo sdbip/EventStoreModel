@@ -3,7 +3,7 @@ import Source
 
 final class DetailsTests: XCTestCase {
     func test_writesCodableDetails() throws {
-        let counter = Counter(reconstitution: .init(id: "counter"))
+        let counter = Counter(snapshotId: "counter")
         counter.step(count: 10)
 
         XCTAssertEqual(counter.unpublishedEvents.count, 1)
@@ -31,12 +31,12 @@ final class DetailsTests: XCTestCase {
 
 final class Counter {
     static let typeId = "Counter"
-    let reconstitution: ReconstitutionData
+    let snapshotId: SnapshotId
     var unpublishedEvents: [UnpublishedEvent] = []
     var currentValue = 0
 
-    init(reconstitution: ReconstitutionData) {
-        self.reconstitution = reconstitution
+    init(snapshotId: SnapshotId) {
+        self.snapshotId = snapshotId
     }
 
     func step(count: Int) {

@@ -22,8 +22,7 @@ public struct History {
             throw ReconstitutionError.incorrectType
         }
 
-        let entity = EntityType(
-            reconstitution: ReconstitutionData(id: id, version: version))
+        let entity = EntityType(snapshotId: SnapshotId(entityId: id, version: version))
         for event in events { entity.replay(event) }
         return entity
     }
