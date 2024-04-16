@@ -2,7 +2,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "EventStore",
+    name: "EventStoreModel",
     products: [
         .library(
             name: "Source",
