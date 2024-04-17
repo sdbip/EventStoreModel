@@ -2,9 +2,7 @@
 
 A package for using event-sourcing in applications. It is particularly useful when using the CQRS architecture style. The Command side would employ the `Source` target, and the Query side would use the `Projection` target.
 
-State is stored in a relational database with built-in support for SQLite and PostgreSQL.
-
-# The Concept Behind Event Sourcing
+# the Source Target
 
 The idea of event sourcing is to not simply store the current *state* of the application, but instead store each historical *change* to the state. We call such changes *events*.
 
@@ -16,9 +14,9 @@ Event Sourcing is a product of Domain-Driven Design (DDD). In DDD, we have two c
 
 ## Value Objects
 
-Value objects in general are not modeled here, but it is still important to understand them. A value object is (as the term implies) an object that represents a specific value. Values cannot be modified, only replaced. Value objects are therefore always immutable (except maybe in Swift).
+Value objects in general are not modeled here, but it is still important to understand them. A value object is (as the term implies) an object that represents a specific value. Values cannot be modified, only replaced. Value objects should therefore always be immutable.
 
-In Swift, value objects can be defined through value-semantics (`struct`). Thanks to copy-on-write, Swift has much less need for immutability. In rare cases, you might decide that it is okay to make value objects mutable. You should still be very restricted with *how* the objects may be changed, though.
+In Swift, however, value objects can be defined through value-semantics (`struct`). Thanks to copy-on-write, Swift has much less need for enforced immutability. In rare cases, you might decide that it is okay to make value objects mutable. You should still be very restricted with *how* they may be changed, though.
 
 Value objects are also encapsulated. They have an internal representation of data and an external interface. Users of the value object may only couple to the interface, not to the data representation.
 
@@ -38,70 +36,20 @@ An action that changes the state of an entity (typically) needs to first reconst
 
 When the action performs the actual change, the entity should add events to its `unpublishedEvents` property. These events (appended to the sequence of already published events) define its new state. This state is not official until the new events have been published.
 
-# Technical Notes
+# the Projection Target
 
-The point of DDD is to *not* focus on the technology or other implementation details. However, the technical choices do need to be mentioned, because developers believe they need to know them. If they actually do or not is beside the point.
+The idea of the `Projection` target is to *project* the state onto a read model. It is possible to have multiple read models synchronised with the same `Source`. It is also possible to have any single read model projecting data from multiple sources. Or even (but perhaps not recommended) to project the data from one `Source` into another. If that is done, projections should never be performed in the reverse direction.
 
-## Optimistic locking
+## Event
 
-Concurrent modification of shared state can be a big problem. If two users happen to change the same entity at the same time, there's a risk that they both read the same initial state, and then make conflicting changes that cannot be reconciled. This library employs “optimistic locking” to avoid such a scenario. Every entity has a `version` that is read when it is reconstituted, and again before publishing changes. Only if the version is the same at both instants is publishing allowed.
+In a projection, the rules that give rise to state changes are unimportant. The only concern is that events have been logged. These events define the state of the `Entities` that collected together define the entire application state.
 
-If the stored state is the same, it is assumed that no other process has changed the state in the intervening time. If no one has yet published new changes, there is no possibility of a conflict, and publishing the current changes will be allowed. At that time, the version is also incremented to indicate to any other active process that the state has now changed.
+Events should be read from the source database at appropriate intervals. They could be read by polling or they could be read immediately as they are logged. It is not recommended to project events before they are written; writing events to disk can fail for multiple reasons.
 
-If the stored version number is different from what was read at reconstitution, the state has changed during the execution of this action. Since a different state can potentially affect the outcome of this action, all the current changes are to be considered invalid and publishing them is not allowed. Our only choices are to either abort the operation entirely or perform the action again. If we choose to repeat the action, we must discard the current, invalid state information, and reconstitute the entity from its new state. Then we can perform the action on this state, and try to publish those changes.
+An `Entity` on the projection side is essentially only an identifier with a type code. Apart from the entity, the `Event` contains information about the state change and the `position` in the stream that the change applies to.
 
-## Tables
+The event `position` is a simple counter that is meant to aid the projection in remaining consistent and synchronised. If all events at `position` *n* have been processed when the projection machine is shut down, restarted or crashes, it can simply continue at the next `position` and the state will not be corrupted. Without the `position`, the projector would have to replay all events from the beginning of time and it might take minutes (or days depending on the size of the source data) to be in sync again.
 
-State is stored in a relational database with built-in support for SQLite and PostgreSQL. Note that table names are never quoted in the SQL scripts, and, because reasons, PostgreSQL converts unquoted names to lowercase. That is however the only difference you will see.
+## Why is `position` of type `Int64` and not `Int`?
 
-The `Entities` table:
-
-```sql
-"id" TEXT PRIMARY KEY
-"type" TEXT
-"version" INT
-```
-
-The `Entities` table has two data columns: the `type` and the `version` of an entity. The version is used for concurrency checks (see Optimistic Concurrency above). The type is used as a runtime type-checker. When reconstituting the state of an entity it needs to be the type you expect. If it isn't, an error will be thrown.
-
-The `Events` table:
-
-```sql
-"entity_id" TEXT
-"entity_type" TEXT
-"name" TEXT
-"details" TEXT
-"actor" TEXT
-"timestamp" DECIMAL(12,7) -- Julian Day (days since ) representation
-"version" INT
-"position" BIGINT
-```
-
-The events table is the main storage space for entity state. The `entity_id` and `entity_type` columns must match the corresponding columns for a row in the `Entities` table. This is the entity that changed with this event.
-
-The `name` and `details` (JSON) columns define what changed for the entity. The `version` column orders events per entity, and the last event stored for an entity must match its `version` column. The `position` column orders events globally and is motly used for projections.
-
-The `actor` and `timestamp` columns are metadata that can be used for auditing.
-
-The `timestamp` is stored as the number of days (including fraction) that have passed since midnight UTC on Jan 1, 1970 (a.k.a. the Unix Epoch).
-
-## Database Support
-
-There is currently only support for two database providers.
-
-- PostgreSQL
-- SQLite
-
-### What about SQL Server?
-
-As of 2022, there is no known SQL Server driver available for Swift. Here's a discussion that indicates some small progress: https://forums.swift.org/t/sql-server-driver/20327. It is unknown what has happened since April 2020.
-
-Apparently SQL Server is not prioritised by the Swift community.
-
-### Maybe add suppoet for MySQL?
-
-MySQL support does not feel as important as SQL Server. On the other hand, MySQL has Swift drivers. Here are a couple:
-
-- https://github.com/mcorega/MySqlSwiftNative
-- https://github.com/novi/mysql-swift
-
+There is theoretically possible to track up to 2^32 unique entity ids. Each `Entity` can theoretically log 2^32 events. Multiply those two numbers for a theoretical max of 2^64 events all in all. Even if no `Entity` ever logs the maximum number of events, and even if not every `Event` increments the `position` in the stream, there is a strong probability that the number 2^32 will be exceeded for at least some databases. Hence the need for a datatype that holds more than 32 bits.
