@@ -56,4 +56,6 @@ The event `position` is a simple counter that is meant to aid the projection in 
 
 ### Why is `position` of type `Int64` and not `Int`?
 
-There is theoretically possible to track up to 2^32 unique entity ids. Each `Entity` can theoretically log 2^32 events. Multiply those two numbers for a theoretical max of 2^64 events all in all. Even if no `Entity` ever logs the maximum number of events, and even if not every `Event` increments the `position` in the stream, there is a strong probability that the number 2^32 will be exceeded for at least some databases. Hence the need for a datatype that holds more than 32 bits.
+It is theoretically possible to track up to 2^32 unique `Entity` ids in the system. Each `Entity` can theoretically log 2^32 events. Multiply those two numbers for a theoretical max of 2^64 events all in all. Even if no `Entity` ever logs the maximum number of events, and even if not every `Event` increments the `position` in the stream, there is a strong probability that the number 2^32 will be eventually reached (and exceeded), for at least some databases. Hence the need for a datatype that contains more than 32 bits.
+
+While `Int` might be 64 bit in all implementations today, it is possible that there could be an implementaton with only 32 bits. Making the 64 bit requirement explicit is also good practice.
